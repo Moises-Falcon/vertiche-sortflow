@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap');
+
+:root {
+  --bg-base: #F5F5F0;
+  --bg-panel: #FFFFFF;
+  --bg-header: #1C2B3A;
+  --color-primary: #1A5276;
+  --color-primary-light: #2980B9;
+  --color-ok: #1E8449;
+  --color-ok-bg: #EAFAF1;
+  --color-warn: #B7770D;
+  --color-warn-bg: #FEF9E7;
+  --color-error: #922B21;
+  --color-error-bg: #FDEDEC;
+  --color-text-primary: #1C2B3A;
+  --color-text-secondary: #566573;
+  --color-text-muted: #95A5A6;
+  --color-border: #D5D8DC;
+  --color-border-strong: #AEB6BF;
+  --font-main: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
+  --radius: 4px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+
+  /* Tipo de flujo */
+  --flujo-crossdock:    #1A5276;
+  --flujo-crossdock-bg: #EBF5FB;
+  --flujo-almacen:      #1E6B3B;
+  --flujo-almacen-bg:   #EAFAF1;
+  --flujo-refill:       #7D4B0E;
+  --flujo-refill-bg:    #FEF3E2;
+
+  /* Etapas RFID (7 etapas oficiales V5) */
+  --etapa-preregistro:      #2471A3;
+  --etapa-preregistro-bg:   #EBF5FB;
+  --etapa-qa:               #1E8449;
+  --etapa-qa-bg:            #EAFAF1;
+  --etapa-registro:         #7D6608;
+  --etapa-registro-bg:      #FEF9E7;
+  --etapa-sorter:           #6C3483;
+  --etapa-sorter-bg:        #F5EEF8;
+  --etapa-bahia:            #BA4A00;
+  --etapa-bahia-bg:         #FBF0E9;
+  --etapa-auditoria:        #1C2B3A;
+  --etapa-auditoria-bg:     #F2F3F4;
+  --etapa-envio:            #1E8449;
+  --etapa-envio-bg:         #EAFAF1;
+  --etapa-transito:         #566573;
+  --etapa-transito-bg:      #F2F3F4;
+
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: var(--font-main); background: var(--ds-bg-page); color: var(--color-text-primary); }
+button { font-family: var(--font-main); }
+input, select { font-family: var(--font-main); }
+
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ─────────────────────────────────────────────────────────
+   DESIGN SYSTEM V8 — Dashboard Industrial Limpio
+   Vertice CEDIS · Sistema RFID
+   ───────────────────────────────────────────────────────── */
+
+:root {
+  /* Fondos */
+  --ds-bg-page:       #F5F7FA;
+  --ds-bg-surface:    #FFFFFF;
+  --ds-bg-surface-2:  #F8FAFC;
+  --ds-bg-header:     #1A2535;
+
+  /* Bordes */
+  --ds-border-light:  #E8ECF0;
+  --ds-border-medium: #D1D9E0;
+  --ds-border-strong: #B0BEC5;
+
+  /* Primario */
+  --ds-primary:        #4F46E5;
+  --ds-primary-light:  #EEF2FF;
+  --ds-primary-border: #C7D2FE;
+  --ds-primary-dark:   #3730A3;
+
+  /* Semaforo Verde */
+  --ds-verde:          #16A34A;
+  --ds-verde-halo:     #BBF7D0;
+  --ds-verde-bg:       #F0FDF4;
+  --ds-verde-border:   #86EFAC;
+  --ds-verde-text:     #14532D;
+
+  /* Semaforo Amarillo */
+  --ds-amarillo:       #D97706;
+  --ds-amarillo-halo:  #FDE68A;
+  --ds-amarillo-bg:    #FFFBEB;
+  --ds-amarillo-border:#FCD34D;
+  --ds-amarillo-text:  #78350F;
+
+  /* Semaforo Rojo */
+  --ds-rojo:           #DC2626;
+  --ds-rojo-halo:      #FECACA;
+  --ds-rojo-bg:        #FFF5F5;
+  --ds-rojo-border:    #FCA5A5;
+  --ds-rojo-text:      #7F1D1D;
+
+  /* Gris vacio */
+  --ds-gris-dot:       #CBD5E1;
+  --ds-gris-bg:        #F8FAFC;
+  --ds-gris-border:    #E8ECF0;
+
+  /* Zonas */
+  --ds-zona-bahia:            #4F46E5;
+  --ds-zona-bahia-bg:         #EEF2FF;
+  --ds-zona-bahia-border:     #C7D2FE;
+  --ds-zona-auditoria:        #7C3AED;
+  --ds-zona-auditoria-bg:     #F5F3FF;
+  --ds-zona-auditoria-border: #DDD6FE;
+  --ds-zona-envio:            #059669;
+  --ds-zona-envio-bg:         #ECFDF5;
+  --ds-zona-envio-border:     #A7F3D0;
+
+  /* Etapas del flujo */
+  --ds-etapa-preregistro: #2563EB;
+  --ds-etapa-qa:          #059669;
+  --ds-etapa-registro:    #D97706;
+  --ds-etapa-sorter:      #7C3AED;
+  --ds-etapa-bahia:       #0891B2;
+  --ds-etapa-auditoria:   #DB2777;
+  --ds-etapa-envio:       #16A34A;
+
+  /* Textos */
+  --ds-text-primary:   #0F172A;
+  --ds-text-secondary: #334155;
+  --ds-text-muted:     #64748B;
+  --ds-text-disabled:  #94A3B8;
+  --ds-text-inverse:   #FFFFFF;
+
+  /* Sombras */
+  --ds-shadow-xs:    0 1px 3px rgba(0,0,0,0.06);
+  --ds-shadow-sm:    0 2px 8px rgba(0,0,0,0.08);
+  --ds-shadow-md:    0 4px 16px rgba(0,0,0,0.10);
+  --ds-shadow-lg:    0 8px 32px rgba(0,0,0,0.14);
+  --ds-shadow-panel: 0 4px 20px rgba(79,70,229,0.15);
+
+  /* Radii */
+  --ds-radius-sm:   6px;
+  --ds-radius-md:   10px;
+  --ds-radius-lg:   14px;
+  --ds-radius-xl:   20px;
+  --ds-radius-pill: 9999px;
+
+  /* Espaciado */
+  --ds-space-1:  4px;
+  --ds-space-2:  8px;
+  --ds-space-3:  12px;
+  --ds-space-4:  16px;
+  --ds-space-5:  20px;
+  --ds-space-6:  24px;
+  --ds-space-8:  32px;
+  --ds-space-10: 40px;
+}
+
+@keyframes ds-pulso-rojo {
+  0%,100% { opacity: 1;   transform: scale(1);    }
+  50%      { opacity: 0.4; transform: scale(0.75); }
+}
+@keyframes ds-entrada-panel {
+  from { opacity: 0; transform: translateY(8px);  }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes ds-entrada-modal {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.ds-celda-hover:hover {
+  border-color: var(--ds-primary) !important;
+  background: var(--ds-primary-light) !important;
+  box-shadow: var(--ds-shadow-panel) !important;
+  cursor: pointer;
+}
+.ds-card-hover:hover {
+  border-color: var(--ds-primary) !important;
+  cursor: pointer;
+}
+.ds-rect-aud:hover {
+  border-color: var(--ds-zona-auditoria) !important;
+  background: var(--ds-zona-auditoria-bg) !important;
+  cursor: pointer;
+}
+.ds-rect-env:hover {
+  border-color: var(--ds-zona-envio) !important;
+  background: var(--ds-zona-envio-bg) !important;
+  cursor: pointer;
+}
+

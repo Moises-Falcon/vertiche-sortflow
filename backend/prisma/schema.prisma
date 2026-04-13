@@ -1,0 +1,277 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum EtapaRFID {
+  PREREGISTRO
+  QA
+  REGISTRO
+  SORTER
+  BAHIA
+  AUDITORIA
+  ENVIO
+}
+
+enum EstadoPrepack {
+  EN_TRANSITO
+  PREREGISTRO
+  QA
+  REGISTRO
+  SORTER
+  BAHIA
+  AUDITORIA
+  ENVIO
+  COMPLETADO
+}
+
+enum TipoFlujo {
+  CROSS_DOCK
+  NUEVA_TIENDA
+  REFILL
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADO
+  CANCELADO
+}
+
+enum EstadoPalet {
+  ACTIVO
+  PROCESADO
+  DESPACHADO
+}
+
+enum EstadoOrden {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+  CANCELADA
+}
+
+enum EstadoCaja {
+  ABIERTA
+  LLENANDO
+  LLENA
+  SELLADA
+}
+
+enum TipoAnomalia {
+  TAG_DESCONOCIDO
+  TAG_DUPLICADO
+  BAHIA_INCORRECTA
+  TIENDA_INCORRECTA
+  LECTURA_FALLIDA
+  QA_RECHAZADO
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Tienda {
+  tienda_id      String  @id
+  nombre         String
+  ciudad         String
+  region         String
+  bahia_asignada String
+  activa         Boolean @default(true)
+  estado_rep     String?
+  tags           Tag[]
+  cajas          Caja[]
+
+  @@map("tiendas")
+}
+
+model Proveedor {
+  id        Int           @id @default(autoincrement())
+  nombre    String
+  codigo    String        @unique
+  contacto  String?
+  email     String?
+  creado_en DateTime      @default(now())
+  tags      Tag[]
+  anomalias Anomalia[]
+  pedidos   Pedido[]
+  ordenes   OrdenCompra[]
+
+  @@map("proveedores")
+}
+
+model OrdenCompra {
+  orden_id        String        @id
+  proveedor_id    Int
+  proveedor       Proveedor     @relation(fields: [proveedor_id], references: [id])
+  modelo          String
+  nombre_producto String?
+  descripcion     String?
+  foto_url        String?
+  estado          EstadoOrden   @default(PENDIENTE)
+  total_esperados Int
+  total_recibidos Int           @default(0)
+  fecha_creacion  DateTime      @default(now())
+  detalles        DetalleOrden[]
+  palets          Palet[]
+
+  @@map("ordenes_compra")
+}
+
+model DetalleOrden {
+  id       Int         @id @default(autoincrement())
+  orden_id String
+  orden    OrdenCompra @relation(fields: [orden_id], references: [orden_id])
+  sku      String
+  talla    String
+  color    String
+  cantidad Int
+
+  @@map("detalle_orden")
+}
+
+model Pedido {
+  pedido_id              String       @id
+  proveedor_id           Int
+  proveedor              Proveedor    @relation(fields: [proveedor_id], references: [id])
+  estado                 EstadoPedido @default(PENDIENTE)
+  fecha_pedido           DateTime     @default(now())
+  fecha_llegada          DateTime?
+  fecha_entrega_estimada DateTime?
+  total_esperados        Int          @default(0)
+  total_recibidos        Int          @default(0)
+  palets                 Palet[]
+  tags                   Tag[]
+
+  @@map("pedidos")
+}
+
+model Palet {
+  palet_id         String      @id
+  pedido_id        String
+  pedido           Pedido      @relation(fields: [pedido_id], references: [pedido_id])
+  orden_id         String?
+  orden            OrdenCompra? @relation(fields: [orden_id], references: [orden_id])
+  estado           EstadoPalet @default(ACTIVO)
+  total_prepacks   Int         @default(0)
+  creado_en        DateTime    @default(now())
+  timestamp_llegada DateTime?
+  timestamp_salida  DateTime?
+  tiempo_ciclo_min  Int?
+  tags              Tag[]
+  etapa_logs        PaletEtapaLog[]
+
+  @@map("palets")
+}
+
+model PaletEtapaLog {
+  id                Int       @id @default(autoincrement())
+  palet_id          String
+  palet             Palet     @relation(fields: [palet_id], references: [palet_id])
+  etapa             EtapaRFID
+  timestamp_entrada DateTime  @default(now())
+  timestamp_salida  DateTime?
+  prepacks_entrada  Int       @default(0)
+  prepacks_salida   Int       @default(0)
+  tiene_anomalia    Boolean   @default(false)
+  notas             String?
+
+  @@index([palet_id])
+  @@index([etapa])
+  @@map("palet_etapa_log")
+}
+
+model Tag {
+  epc             String        @id
+  sku             String
+  talla           String
+  color           String
+  cantidad_piezas Int
+  proveedor_id    Int
+  proveedor       Proveedor     @relation(fields: [proveedor_id], references: [id])
+  tienda_id       String?
+  tienda          Tienda?       @relation(fields: [tienda_id], references: [tienda_id])
+  palet_id        String?
+  palet           Palet?        @relation(fields: [palet_id], references: [palet_id])
+  pedido_id       String?
+  pedido          Pedido?       @relation(fields: [pedido_id], references: [pedido_id])
+  tipo_flujo      TipoFlujo     @default(CROSS_DOCK)
+  etapa_actual    EstadoPrepack @default(EN_TRANSITO)
+  qa_fallido      Boolean       @default(false)
+  qa_motivo_fallo String?
+  qa_timestamp    DateTime?
+  registrado_en   DateTime      @default(now())
+  eventos         EventoLectura[]
+  prepack_cajas   PrepackCaja[]
+  anomalias       Anomalia[]
+
+  @@map("tags")
+}
+
+model EventoLectura {
+  id           Int       @id @default(autoincrement())
+  epc          String
+  tag          Tag       @relation(fields: [epc], references: [epc])
+  lector_id    String
+  bahia        String
+  timestamp    DateTime  @default(now())
+  etapa        EtapaRFID
+  rssi         Float?
+  antenna_port String?
+  es_duplicado Boolean   @default(false)
+
+  @@map("eventos_lectura")
+  @@index([epc])
+  @@index([timestamp])
+  @@index([bahia])
+}
+
+model Caja {
+  caja_id            String      @id
+  tienda_id          String
+  tienda             Tienda      @relation(fields: [tienda_id], references: [tienda_id])
+  bahia              String
+  estado             EstadoCaja  @default(ABIERTA)
+  timestamp_creacion DateTime    @default(now())
+  timestamp_sellado  DateTime?
+  prepack_cajas      PrepackCaja[]
+
+  @@map("cajas")
+}
+
+model PrepackCaja {
+  id                    Int      @id @default(autoincrement())
+  epc                   String
+  tag                   Tag      @relation(fields: [epc], references: [epc])
+  caja_id               String
+  caja                  Caja     @relation(fields: [caja_id], references: [caja_id])
+  timestamp_vinculacion DateTime @default(now())
+  es_correcto           Boolean  @default(true)
+
+  @@unique([epc, caja_id])
+  @@map("prepack_caja")
+}
+
+model Anomalia {
+  id           Int          @id @default(autoincrement())
+  epc          String?
+  tag          Tag?         @relation(fields: [epc], references: [epc])
+  tipo_error   TipoAnomalia
+  lector_id    String
+  bahia        String
+  etapa        EtapaRFID?
+  timestamp    DateTime     @default(now())
+  proveedor_id Int?
+  proveedor    Proveedor?   @relation(fields: [proveedor_id], references: [id])
+  resuelto     Boolean      @default(false)
+  descripcion  String?
+
+  @@map("anomalias")
+  @@index([timestamp])
+  @@index([proveedor_id])
+  @@index([tipo_error])
+}
