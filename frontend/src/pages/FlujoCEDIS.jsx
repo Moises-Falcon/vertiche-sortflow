@@ -125,40 +125,57 @@ const DEMO_OCS = [
   _oc('OC-025','Short Gym Hombre','ActiveWear CDMX',{AUDITORIA:[_t('Negro','S','AUDITORIA','Mérida','Mérida','YUC'),_t('Negro','M','AUDITORIA','Cancún','Cancún','QROO')],ENVIO:[_t('Azul','S','ENVIO','Playa Carmen','Playa del Carmen','QROO'),_t('Azul','M','ENVIO','Campeche','Campeche','CAMP'),_t('Gris','L','ENVIO','Villahermosa','Villahermosa','TAB')]},{etapa_logs:[mkLog('PREREGISTRO',4.5,5.0,5,5),mkLog('QA',5.0,5.5,5,5),mkLog('REGISTRO',5.5,6.0,5,5),mkLog('SORTER',6.0,6.5,5,5),mkLog('BAHIA',6.5,7.0,5,5),mkLog('AUDITORIA',7.0,null,5,null),mkLog('ENVIO',7.5,null,3,null)]}),
 ];
 
+// ─── Datos por etapa ────────────────────────────────────────────────────────
+
+function getDatosEtapa(etapaId, tagsEnEtapa, oc) {
+  const total=oc.totalPrepacks, n=tagsEnEtapa.length;
+  const pct=total>0?Math.round((n/total)*100):0;
+  const err=tagsEnEtapa.filter(t=>t.qa_fallido).length, ok=n-err;
+  const pctOk=n>0?Math.round((ok/n)*100):100;
+  const esp=oc.total_esperados||total;
+  const m={
+    PREREGISTRO:[{l:'recibidos',v:n},{l:'esperados',v:esp},{l:'%',v:`${pct}%`}],
+    QA:[{l:'revisados',v:n},{l:'aprobados',v:ok},{l:'calidad',v:`${pctOk}%`}],
+    REGISTRO:[{l:'registrados',v:n},{l:'de',v:total},{l:'avance',v:`${pct}%`}],
+    SORTER:[{l:'clasificados',v:n},{l:'total',v:total},{l:'procesado',v:`${pct}%`}],
+    BAHIA:[{l:'en bahía',v:n},{l:'total',v:total},{l:'distribuido',v:`${pct}%`}],
+    AUDITORIA:[{l:'auditados',v:n},{l:'aprobados',v:ok},{l:'aprobación',v:`${pctOk}%`}],
+    ENVIO:[{l:'enviados',v:n},{l:'de',v:total},{l:'completado',v:`${pct}%`}],
+  };
+  return m[etapaId]||[{l:'prepacks',v:n},{l:'',v:''},{l:'%',v:`${pct}%`}];
+}
+
 // ─── BarraOC (fila del Gantt) ───────────────────────────────────────────────
 
-function BarraOC({ oc, columnWidths, onClickSegmento, panelKey, isDetalle }) {
+function BarraOC({ oc, columnWidths, onClickSegmento, onClickNombre }) {
   return (
-    <div style={{ display:'grid', gridTemplateColumns:columnWidths, width:'100%', minHeight:isDetalle?72:52, alignItems:'center', borderBottom:'1px solid var(--ds-border-light)', position:'relative' }}>
-      <div style={{ gridColumn:'1 / 2', paddingLeft:12, paddingRight:8, display:'flex', flexDirection:'column', gap:1, position:'sticky', left:0, background:'var(--ds-bg-surface)', zIndex:2, borderRight:'1px solid var(--ds-border-light)', minHeight:isDetalle?72:52, justifyContent:'center' }}>
-        <div style={{ fontSize:11, fontWeight:600, color:'var(--ds-text-primary)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:200 }}>{oc.nombre}</div>
-        <div style={{ fontSize:9, color:'var(--ds-text-disabled)', fontFamily:'monospace' }}>{oc.totalPrepacks} prep. · {Math.round(oc.pct)}%</div>
-        {isDetalle && oc.proveedor && <div style={{ fontSize:9, color:'var(--ds-text-disabled)', marginTop:1, fontStyle:'italic' }}>{oc.proveedor}</div>}
+    <div style={{ display:'grid', gridTemplateColumns:columnWidths, width:'100%', minHeight:44, alignItems:'center', borderBottom:'1px solid var(--ds-border-light)' }}>
+      <div onClick={e=>{e.stopPropagation();if(onClickNombre)onClickNombre(oc);}} style={{ paddingLeft:12, paddingRight:8, display:'flex', flexDirection:'column', gap:1, position:'sticky', left:0, background:'var(--ds-bg-surface)', zIndex:2, borderRight:'1px solid var(--ds-border-light)', minHeight:44, justifyContent:'center', cursor:'pointer', transition:'background .15s' }} onMouseEnter={e=>e.currentTarget.style.background='var(--ds-primary-light)'} onMouseLeave={e=>e.currentTarget.style.background='var(--ds-bg-surface)'}>
+        <div style={{ fontSize:12, fontWeight:600, color:'var(--ds-primary)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:160, textDecoration:'underline dotted' }}>{oc.nombre}</div>
+        <div style={{ fontSize:9, color:'var(--ds-text-disabled)', fontFamily:'monospace' }}>{oc.totalPrepacks} prep. · {oc.proveedor}</div>
       </div>
       {ETAPAS_FLUJO.map((etapa, idx) => {
         const tagsEnEtapa = oc.tagsPorEtapa[etapa.id] || [];
         const tienePrep = tagsEnEtapa.length > 0;
-        const key = `${oc.ordenId}-${etapa.id}`;
-        const activa = panelKey === key;
-        const errEnEtapa = tagsEnEtapa.some(t => t.qa_fallido === true);
         const enRango = idx >= oc.idxMin && idx <= oc.idxMax;
+        const errEnEtapa = tagsEnEtapa.some(t => t.qa_fallido === true);
         const color = ETAPA_COLORS[etapa.id] || '#94A3B8';
-        const bgActivo = tienePrep ? (errEnEtapa ? 'var(--ds-rojo-bg)' : `${color}22`) : enRango ? '#F1F5F9' : 'transparent';
+        const datos = tienePrep ? getDatosEtapa(etapa.id, tagsEnEtapa, oc) : null;
         return (
-          <div key={etapa.id} onClick={tienePrep ? () => onClickSegmento(key, oc, etapa, tagsEnEtapa) : undefined} style={{
-            height:isDetalle?56:44, margin:'2px 1px', borderRadius:6,
-            background: activa ? `${color}30` : bgActivo,
-            border: activa ? `2px solid ${color}` : tienePrep ? `1.5px solid ${errEnEtapa ? 'var(--ds-rojo-border)' : `${color}66`}` : enRango ? '1px dashed var(--ds-border-light)' : 'none',
-            cursor: tienePrep ? 'pointer' : 'default',
-            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:1,
-            transition:'all .15s', position:'relative', overflow:'hidden',
-          }}>
-            {tienePrep && <>
-              <div style={{ position:'absolute', bottom:0, left:0, right:0, height:`${Math.min(100, (tagsEnEtapa.length / oc.totalPrepacks) * 100 * 3)}%`, background:`${color}22`, borderRadius:'0 0 6px 6px' }} />
-              <div style={{ fontSize:11, fontWeight:800, color, lineHeight:1, zIndex:1 }}>{tagsEnEtapa.length}</div>
-              <div style={{ fontSize:7, color, fontWeight:600, textTransform:'uppercase', letterSpacing:'.3px', zIndex:1 }}>prep.</div>
-              {isDetalle && <div style={{ fontSize:8, color, fontWeight:600, opacity:.8, zIndex:1 }}>{Math.round((tagsEnEtapa.length / oc.totalPrepacks) * 100)}%</div>}
-              {errEnEtapa && <div style={{ position:'absolute', top:4, right:5, width:10, height:10, borderRadius:'50%', background:'var(--ds-rojo)', border:'2px solid #fff', animation:'ds-pulso-rojo 1.4s ease-in-out infinite', boxShadow:'0 0 0 2px var(--ds-rojo-halo)' }} />}
+          <div key={etapa.id} onClick={tienePrep ? () => onClickSegmento(oc, etapa) : undefined}
+            style={{ height:36, margin:'3px 2px', borderRadius:6, background:tienePrep?(errEnEtapa?'var(--ds-rojo-bg)':`${color}20`):enRango?'#F8FAFC':'transparent', border:tienePrep?`1.5px solid ${errEnEtapa?'var(--ds-rojo-border)':`${color}55`}`:enRango?'1px dashed #E2E8F0':'none', cursor:tienePrep?'pointer':'default', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .15s', position:'relative', overflow:'hidden' }}
+            onMouseEnter={e=>{if(tienePrep){e.currentTarget.style.background=`${color}35`;e.currentTarget.style.borderColor=color;}}}
+            onMouseLeave={e=>{if(tienePrep){e.currentTarget.style.background=errEnEtapa?'var(--ds-rojo-bg)':`${color}20`;e.currentTarget.style.borderColor=errEnEtapa?'var(--ds-rojo-border)':`${color}55`;}}}
+          >
+            {tienePrep && datos && <>
+              <div style={{ position:'absolute', left:0, top:0, bottom:0, width:`${Math.min(100,Math.round((tagsEnEtapa.length/oc.totalPrepacks)*100))}%`, background:`${color}12`, borderRadius:'6px 0 0 6px' }} />
+              <div style={{ display:'flex', alignItems:'center', gap:0, width:'100%', justifyContent:'space-around', padding:'0 6px', zIndex:1, position:'relative' }}>
+                {datos.map((d,i) => <div key={i} style={{ textAlign:'center', flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:800, color:errEnEtapa?'var(--ds-rojo)':color, lineHeight:1 }}>{d.v}</div>
+                  {d.l && <div style={{ fontSize:7, fontWeight:600, color:errEnEtapa?'var(--ds-rojo-text)':color, textTransform:'uppercase', letterSpacing:'.3px', opacity:.8, lineHeight:1.2, marginTop:1 }}>{d.l}</div>}
+                </div>)}
+              </div>
+              {errEnEtapa && <div style={{ position:'absolute', top:3, right:4, width:8, height:8, borderRadius:'50%', background:'var(--ds-rojo)', border:'2px solid #fff', animation:'ds-pulso-rojo 1.4s ease-in-out infinite' }} />}
             </>}
             {enRango && !tienePrep && <div style={{ width:20, height:2, background:'var(--ds-border-medium)', borderRadius:2 }} />}
           </div>
@@ -304,13 +321,12 @@ function PanelBahia({ titulo, ocs, onClose, onAbrirOC }) {
 
 // ─── COMPONENTE PRINCIPAL ───────────────────────────────────────────────────
 
-export default function FlujoCEDIS({ onAbrirOC }) {
+export default function FlujoCEDIS({ onAbrirOC, onAbrirResumen }) {
   const [ordenesFull, setOrdenesFull] = useState([]);
   const [kpi, setKpi] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [pausado, setPausado] = useState(false);
   const [modoDemo, setModoDemo] = useState(false);
-  const [modo, setModo] = useState(() => localStorage.getItem('rfid_modo') || 'compacto');
   const [panelBahia, setPanelBahia] = useState(null);
   const pausadoRef = useRef(false);
   const modoDemoRef = useRef(false);
@@ -335,15 +351,13 @@ export default function FlujoCEDIS({ onAbrirOC }) {
   useEffect(() => { const h = () => { if (!pausadoRef.current) cargarDatos(); }; socket.on('lectura', h); return () => socket.off('lectura', h); }, [cargarDatos]);
 
   function togglePausa() { setPausado(prev => { const n = !prev; if (!n) setTimeout(() => cargarDatos(), 100); return n; }); }
-  function cambiarModo(m) { setModo(m); localStorage.setItem('rfid_modo', m); }
 
-  const ocs = modoDemo ? DEMO_OCS : ordenesFull.map(buildOC).filter(oc => oc.etapasActivas.length > 0);
+  const ocs = (modoDemo ? DEMO_OCS : ordenesFull.map(buildOC).filter(oc => oc.etapasActivas.length > 0)).filter(oc => !oc.etapasActivas.every(e => e === 'COMPLETADO'));
   function ocsEnBahiaYEtapa(numBahia, etapa) {
     const bahiaId = `BAHIA-${numBahia}`;
     return ocs.filter(oc => (oc.tagsPorEtapa[etapa] || []).some(t => t.tienda?.bahia_asignada === bahiaId || t.bahia === bahiaId));
   }
-  const isDetalle = modo === 'detalle';
-  const GANTT_COLS = `240px repeat(${ETAPAS_FLUJO.length}, 1fr)`;
+  const GANTT_COLS = `180px repeat(${ETAPAS_FLUJO.length}, 1fr)`;
 
   return (
     <div style={{ fontFamily:'IBM Plex Sans, sans-serif' }}>
@@ -354,11 +368,6 @@ export default function FlujoCEDIS({ onAbrirOC }) {
             Flujo del CEDIS
             {pausado && <span style={{ background:'var(--ds-verde-bg)', color:'var(--ds-verde-text)', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:700 }}>⏸ Pausado</span>}
             {!cargando && <span style={{ fontWeight:400, color:'var(--ds-text-disabled)' }}>— {ocs.length} OCs activas</span>}
-          </div>
-          <div style={{ display:'flex', background:'var(--ds-bg-surface-2)', border:'1px solid var(--ds-border-light)', borderRadius:8, overflow:'hidden' }}>
-            {[{ id:'compacto', label:'Compacto' },{ id:'detalle', label:'Detalle' }].map(m => (
-              <button key={m.id} onClick={() => cambiarModo(m.id)} style={{ padding:'5px 14px', border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:modo===m.id?'var(--ds-primary)':'transparent', color:modo===m.id?'#fff':'#475569', transition:'all .15s' }}>{m.label}</button>
-            ))}
           </div>
         </div>
 
@@ -372,7 +381,7 @@ export default function FlujoCEDIS({ onAbrirOC }) {
                 <div style={{ paddingLeft:12, paddingBottom:6, borderBottom:'2px solid var(--ds-border-light)' }}><span style={{ fontSize:9, fontWeight:700, color:'var(--ds-text-disabled)', textTransform:'uppercase', letterSpacing:'.4px' }}>Orden de compra</span></div>
                 {ETAPAS_FLUJO.map(etapa => <div key={etapa.id} style={{ textAlign:'center', paddingBottom:6, borderBottom:`2px solid ${ETAPA_COLORS[etapa.id]}` }}><div style={{ fontSize:9, fontWeight:700, color:ETAPA_COLORS[etapa.id], textTransform:'uppercase', letterSpacing:'.3px' }}>{etapa.short}</div></div>)}
               </div>
-              {ocs.map(oc => <BarraOC key={oc.ordenId} oc={oc} columnWidths={GANTT_COLS} onClickSegmento={(_key,ocData) => { if (onAbrirOC) onAbrirOC(ocData.ordenId, modoDemo ? ocData : null); }} panelKey={null} isDetalle={isDetalle} />)}
+              {ocs.map(oc => <BarraOC key={oc.ordenId} oc={oc} columnWidths={GANTT_COLS} onClickSegmento={(ocData, etapa) => { if (onAbrirOC) onAbrirOC(ocData.ordenId, modoDemo ? ocData : null, etapa.id); }} onClickNombre={(ocData) => { if (onAbrirResumen) onAbrirResumen(modoDemo ? (DEMO_OCS.find(d=>d.ordenId===ocData.ordenId)||ocData) : ocData); }} />)}
             </div>
           </div>
           {/* BAHÍAS */}
@@ -383,8 +392,8 @@ export default function FlujoCEDIS({ onAbrirOC }) {
                 <div style={{ width:80, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'flex-end', paddingRight:12 }}><span style={{ fontSize:9, fontWeight:700, color:fila.color, textTransform:'uppercase', letterSpacing:'.4px' }}>{fila.label}</span></div>
                 <div style={{ flex:1, display:'flex', gap:5, overflowX:'auto', justifyContent:'center' }}>
                   {Array.from({ length:10 }, (_,i) => { const n=i+1; const ocsB=ocsEnBahiaYEtapa(n,fila.etapa); const err=ocsB.some(o=>o.hasErr); const key=`${fila.etapa}-B${n}`; const activa=panelBahia?.key===key;
-                    if (fila.etapa==='BAHIA') return <CeldaPill key={n} bahia={n} n={ocsB.length} hasErr={err} activa={activa} onClick={() => { setPanelBahia(activa?null:{key,titulo:`Bahía ${n}`,ocs:ocsB});}} isDetalle={isDetalle} ocs={ocsB} />;
-                    return <CeldaRect key={n} bahia={n} tipo={fila.etapa==='AUDITORIA'?'aud':'env'} n={ocsB.length} hasErr={err} activa={activa} onClick={() => { setPanelBahia(activa?null:{key,titulo:`${fila.label} — Bahía ${n}`,ocs:ocsB});}} isDetalle={isDetalle} ocs={ocsB} />;
+                    if (fila.etapa==='BAHIA') return <CeldaPill key={n} bahia={n} n={ocsB.length} hasErr={err} activa={activa} onClick={() => { setPanelBahia(activa?null:{key,titulo:`Bahía ${n}`,ocs:ocsB});}} isDetalle={true} ocs={ocsB} />;
+                    return <CeldaRect key={n} bahia={n} tipo={fila.etapa==='AUDITORIA'?'aud':'env'} n={ocsB.length} hasErr={err} activa={activa} onClick={() => { setPanelBahia(activa?null:{key,titulo:`${fila.label} — Bahía ${n}`,ocs:ocsB});}} isDetalle={true} ocs={ocsB} />;
                   })}
                 </div>
               </div>

@@ -5,7 +5,8 @@ import Trazabilidad from './pages/Trazabilidad';
 import Vinculacion  from './pages/Vinculacion';
 import Pedidos      from './pages/Pedidos';
 import ModalOC      from './components/ModalOC';
-import ModalPalet   from './components/ModalPalet';
+import ModalPalet      from './components/ModalPalet';
+import ModalResumenOC  from './components/ModalResumenOC';
 
 const TABS = [
   { id: 'flujo',        label: 'Flujo CEDIS'     },
@@ -20,11 +21,14 @@ export default function App() {
   const [trazabilidadEPC, setTrazabilidadEPC] = useState(null);
   const [ocModalId, setOcModalId] = useState(null);
   const [ocDemoData, setOcDemoData] = useState(null);
+  const [ocEtapaOrigen, setOcEtapaOrigen] = useState(null);
   const [paletModalId, setPaletModalId] = useState(null);
+  const [ocResumen, setOcResumen] = useState(null);
 
-  function abrirOC(ordenId, demoData = null) {
+  function abrirOC(ordenId, demoData = null, etapaId = null) {
     setOcModalId(ordenId);
     setOcDemoData(demoData || null);
+    setOcEtapaOrigen(etapaId || null);
   }
 
   function irATrazabilidad(epc) {
@@ -56,16 +60,17 @@ export default function App() {
         </nav>
       </header>
 
-      <main style={{ padding: '20px 24px', maxWidth: 1400, margin: '0 auto' }}>
-        {tab === 'flujo'        && <FlujoCEDIS onAbrirOC={abrirOC} onAbrirPalet={setPaletModalId} />}
+      <main style={{ padding: '20px 24px' }}>
+        {tab === 'flujo'        && <FlujoCEDIS onAbrirOC={abrirOC} onAbrirPalet={setPaletModalId} onAbrirResumen={setOcResumen} />}
         {tab === 'pedidos'      && <Pedidos onAbrirOC={abrirOC} onVerHistorial={irATrazabilidad} />}
         {tab === 'live'         && <LecturasLive />}
         {tab === 'trazabilidad' && <Trazabilidad initialEpc={trazabilidadEPC} />}
         {tab === 'vinculacion'  && <Vinculacion />}
       </main>
 
-      {ocModalId && <ModalOC ordenId={ocModalId} demoData={ocDemoData} onClose={() => { setOcModalId(null); setOcDemoData(null); }} onVerHistorial={irATrazabilidad} />}
+      {ocModalId && <ModalOC ordenId={ocModalId} demoData={ocDemoData} etapaOrigen={ocEtapaOrigen} onClose={() => { setOcModalId(null); setOcDemoData(null); setOcEtapaOrigen(null); }} onVerHistorial={irATrazabilidad} />}
       {paletModalId && <ModalPalet paletId={paletModalId} onClose={() => setPaletModalId(null)} onVerHistorial={irATrazabilidad} />}
+      {ocResumen && <ModalResumenOC oc={ocResumen} onClose={() => setOcResumen(null)} />}
     </div>
   );
 }

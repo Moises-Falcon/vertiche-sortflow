@@ -35,10 +35,11 @@ function calcEstatusPrepack(tag) {
   };
 }
 
-export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistorial }) {
+export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, onClose, onVerHistorial }) {
   const [palet, setPalet] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [expandido, setExpandido] = useState(null);
+  const [prepackModal, setPrepackModal] = useState(null);
 
   useEffect(() => {
     if (demoData) {
@@ -61,6 +62,7 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
   const totalEsperados = palet?.total_esperados||tags.length;
   const totalRecibidos = palet?.total_recibidos||tags.length;
   const faltantes = palet?.faltantes||0;
+  const tagsFiltrados = etapaOrigen ? tags.filter(t => t.etapa_actual === etapaOrigen) : tags;
   const etapasActuales = ETAPAS_ORDEN.filter(e => tags.some(t => t.etapa_actual===e));
   const fallidos = tags.filter(t => t.qa_fallido);
   const tieneErr = fallidos.length>0 || etapaLogs.some(l => l.tiene_anomalia);
@@ -76,7 +78,7 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
     const id=`BAHIA-${i+1}`; const enB=tags.filter(t=>t.tienda?.bahia_asignada===id); return {n:i+1,id,total:enB.length};
   }).filter(b=>b.total>0);
 
-  const tagsSorted = [...tags].sort((a,b)=>{
+  const tagsSorted = [...tagsFiltrados].sort((a,b)=>{
     if(a.qa_fallido&&!b.qa_fallido) return -1; if(!a.qa_fallido&&b.qa_fallido) return 1;
     const ae=(a.anomalias?.length||0)>0, be=(b.anomalias?.length||0)>0;
     if(ae&&!be) return -1; if(!ae&&be) return 1; return 0;
@@ -130,6 +132,39 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
         {cargando?<div style={{padding:60,textAlign:'center',color:'#94A3B8'}}>Cargando detalle...</div>
         :!palet?<div style={{padding:60,textAlign:'center',color:'#EF4444'}}>No se pudo cargar la orden.</div>
         :<>
+          {/* MÉTRICAS DE LA ETAPA DE ORIGEN */}
+          {etapaOrigen && (()=>{
+            const EC={PREREGISTRO:'#2563EB',QA:'#059669',REGISTRO:'#D97706',SORTER:'#7C3AED',BAHIA:'#0891B2',AUDITORIA:'#DB2777',ENVIO:'#16A34A'};
+            const EL={PREREGISTRO:'Pre-registro',QA:'Control de calidad',REGISTRO:'Registro',SORTER:'Sorter',BAHIA:'Bahías',AUDITORIA:'Auditoría',ENVIO:'Envío'};
+            const c=EC[etapaOrigen]||'#6366F1';
+            const te=tags.filter(t=>t.etapa_actual===etapaOrigen);
+            const n=te.length,tot=tags.length,esp=totalEsperados;
+            const err=te.filter(t=>t.qa_fallido).length,ok=n-err;
+            const pct=tot>0?Math.round((n/tot)*100):0;
+            const pctOk=n>0?Math.round((ok/n)*100):100;
+            const mets={
+              PREREGISTRO:[{l:'Recibidos',v:n,d:'prepacks llegaron'},{l:'Esperados',v:esp,d:'según la OC'},{l:'Recibido',v:`${pct}%`,d:'del total esperado'}],
+              QA:[{l:'En QA',v:n,d:'prepacks revisados'},{l:'Aprobados',v:ok,d:'pasaron calidad'},{l:'Calificación',v:`${pctOk}%`,d:'del proveedor'}],
+              REGISTRO:[{l:'Registrados',v:n,d:'en sistema'},{l:'Total OC',v:tot,d:'prepacks totales'},{l:'Avance',v:`${pct}%`,d:'procesado'}],
+              SORTER:[{l:'En Sorter',v:n,d:'clasificando'},{l:'Total',v:tot,d:'prepacks OC'},{l:'Procesado',v:`${pct}%`,d:'del cargamento'}],
+              BAHIA:[{l:'En bahías',v:n,d:'distribuidos'},{l:'Total OC',v:tot,d:'prepacks'},{l:'Distribuido',v:`${pct}%`,d:'del total'}],
+              AUDITORIA:[{l:'Auditados',v:n,d:'prepacks'},{l:'Aprobados',v:ok,d:'pasaron'},{l:'Aprobación',v:`${pctOk}%`,d:'de calidad'}],
+              ENVIO:[{l:'Enviados',v:n,d:'prepacks'},{l:'Total OC',v:tot,d:'prepacks'},{l:'Completado',v:`${pct}%`,d:'del pedido'}],
+            }[etapaOrigen]||[];
+            return(
+              <div style={{padding:'16px 26px',borderBottom:'1px solid var(--ds-border-light)',background:`${c}08`,borderLeft:`4px solid ${c}`}}>
+                <div style={{fontSize:9,fontWeight:700,color:c,textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>{EL[etapaOrigen]} — métricas de esta etapa</div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+                  {mets.map((m,i)=><div key={i} style={{background:'#fff',borderRadius:8,padding:'10px 14px',border:`1px solid ${c}33`}}>
+                    <div style={{fontSize:9,fontWeight:700,color:c,textTransform:'uppercase',letterSpacing:'.4px',marginBottom:4}}>{m.l}</div>
+                    <div style={{fontSize:26,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1}}>{m.v}</div>
+                    <div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:2}}>{m.d}</div>
+                  </div>)}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* TABLA COLOR x TALLA */}
           <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)'}}>
             <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>Contenido — tabla color × talla</div>
@@ -189,7 +224,7 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
             <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)'}}>
               <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:14}}>Historial del cargamento</div>
               {(()=>{
-                const logsC = consolidarHistorial(etapaLogs);
+                const logsC = consolidarHistorial(etapaLogs).filter(l => l.etapa !== 'COMPLETADO');
                 if(logsC.length===0) return <div style={{fontSize:12,color:'#94A3B8'}}>Sin historial registrado.</div>;
                 return(
                   <div style={{overflowX:'auto',paddingBottom:8}}>
@@ -241,7 +276,7 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
           {/* PREPACKS */}
           <div style={{padding:'20px 26px'}}>
             <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>
-              Prepacks ({tags.length}){fallidos.length>0&&<span style={{color:'#991B1B',marginLeft:8}}>· {fallidos.length} rechazado{fallidos.length>1?'s':''} en QA</span>}
+              {etapaOrigen ? `Prepacks en ${ETAPA_LABELS[etapaOrigen]} (${tagsFiltrados.length} de ${tags.length})` : `Prepacks (${tags.length})`}{tagsFiltrados.filter(t=>t.qa_fallido).length>0&&<span style={{color:'#991B1B',marginLeft:8}}>· {tagsFiltrados.filter(t=>t.qa_fallido).length} rechazado{tagsFiltrados.filter(t=>t.qa_fallido).length!==1?'s':''}</span>}
             </div>
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
               <thead><tr style={{background:'#F8FAFC'}}>
@@ -258,12 +293,12 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
                       <td style={{...td,fontSize:11,color:'#94A3B8'}}>{tag.tienda?.bahia_asignada||'—'}</td>
                       <td style={td}><span style={{fontSize:10,fontWeight:600,padding:'2px 7px',borderRadius:4,background:`${ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}18`,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</span></td>
                       <td style={td}>{(()=>{const{presente,entregado,calidadOk}=calcEstatusPrepack(tag);return(
-                        <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                          <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:3,display:'inline-block',background:presente?'#DCFCE7':'#FEE2E2',color:presente?'#14532D':'#7F1D1D'}}>{presente?'✓ Presente':'✗ Ausente'}</span>
-                          <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:3,display:'inline-block',background:entregado?'#DCFCE7':'#F1F5F9',color:entregado?'#14532D':'#64748B'}}>{entregado?'✓ Entregado':'· Pendiente'}</span>
-                          <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:3,display:'inline-block',background:calidadOk?'#DCFCE7':'#FEE2E2',color:calidadOk?'#14532D':'#7F1D1D'}}>{calidadOk?'✓ QA OK':'✗ QA Falló'}</span>
+                        <div style={{display:'flex',alignItems:'center',gap:4,flexWrap:'nowrap'}}>
+                          <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:3,background:presente?'#DCFCE7':'#FEE2E2',color:presente?'#14532D':'#7F1D1D',whiteSpace:'nowrap'}}>{presente?'✓ Pres.':'✗ Aus.'}</span>
+                          <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:3,background:entregado?'#DCFCE7':'#F1F5F9',color:entregado?'#14532D':'#64748B',whiteSpace:'nowrap'}}>{entregado?'✓ Entg.':'· Pend.'}</span>
+                          <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:3,background:calidadOk?'#DCFCE7':'#FEE2E2',color:calidadOk?'#14532D':'#7F1D1D',whiteSpace:'nowrap'}}>{calidadOk?'✓ QA':'✗ QA'}</span>
                         </div>);})()}</td>
-                      <td style={td}><button onClick={e=>{e.stopPropagation();onClose();onVerHistorial(tag.epc);}} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:4,padding:'3px 9px',fontSize:10,cursor:'pointer',color:'var(--ds-primary)'}}>Historial</button></td>
+                      <td style={td}><button onClick={e=>{e.stopPropagation();setPrepackModal(tag);}} style={{background:'none',border:'1px solid var(--ds-primary-border)',borderRadius:4,padding:'2px 8px',fontSize:9,cursor:'pointer',color:'var(--ds-primary)',fontWeight:600}}>Ver detalle</button></td>
                     </tr>,
                     isExp&&<tr key={`${tag.epc}-d`}><td colSpan={6} style={{padding:'16px 20px',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px',marginBottom:14,fontSize:12}}>
@@ -277,7 +312,7 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
                       </div>
                       <div style={{borderTop:'1px solid var(--ds-primary-border)',paddingTop:12}}>
                         <div style={{fontSize:9,fontWeight:700,color:'var(--ds-primary-dark)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:10}}>Recorrido de este prepack</div>
-                        {(()=>{const logsC=consolidarHistorial(etapaLogs);if(logsC.length===0)return<div style={{fontSize:11,color:'#94A3B8'}}>Sin historial disponible.</div>;return(
+                        {(()=>{const logsC=consolidarHistorial(etapaLogs).filter(l=>l.etapa!=='COMPLETADO');if(logsC.length===0)return<div style={{fontSize:11,color:'#94A3B8'}}>Sin historial disponible.</div>;return(
                           <div style={{display:'flex',alignItems:'flex-start',gap:0,overflowX:'auto'}}>
                             {logsC.map((log,idx)=>{const color=ETAPA_COLORS[log.etapa]||'#94A3B8';const enCurso=!log.timestamp_salida;const dur=log.timestamp_salida?Math.round((new Date(log.timestamp_salida)-new Date(log.timestamp_entrada))/60000):null;return(
                               <div key={log.etapa} style={{display:'flex',alignItems:'flex-start'}}>
@@ -302,6 +337,69 @@ export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistor
           </div>
         </>}
       </div>
+
+      {/* MINI-MODAL DEL PREPACK */}
+      {prepackModal&&(()=>{
+        const tag=prepackModal;
+        const COLMAP={azul:'#3B82F6',rojo:'#EF4444',verde:'#22C55E',negro:'#1E293B',blanco:'#F8FAFC',amarillo:'#EAB308',rosa:'#EC4899',gris:'#94A3B8','café':'#92400E',cafe:'#92400E',naranja:'#F97316',morado:'#8B5CF6',beige:'#D4B896','azul oscuro':'#1E3A8A','azul marino':'#1E3A8A'};
+        const cCSS=COLMAP[(tag.color||'').toLowerCase()]||'#94A3B8';
+        const esC=['blanco','white','beige','amarillo','yellow'].includes((tag.color||'').toLowerCase());
+        const txtC=esC?'#1E293B':'#FFFFFF';
+        return(
+          <div onClick={()=>setPrepackModal(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
+            <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:620,background:'#fff',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.25)',animation:'ds-entrada-modal .2s ease',overflow:'hidden'}}>
+              <div style={{padding:'16px 20px',borderBottom:'1px solid var(--ds-border-light)',display:'flex',alignItems:'center',gap:16}}>
+                <div style={{width:56,height:56,borderRadius:10,flexShrink:0,background:cCSS,border:esC?'2px solid #E2E8F0':'none',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>
+                  <svg viewBox="0 0 32 32" width={36} height={36} fill="none"><path d="M10 4L5 10L9 12L9 26L23 26L23 12L27 10L22 4C21 6 18.5 7.5 16 7.5C13.5 7.5 11 6 10 4Z" fill={esC?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.25)'} stroke={esC?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.5)'} strokeWidth={1}/></svg>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>Detalle del prepack</div>
+                  <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1,marginBottom:2}}>{tag.color} — Talla {tag.talla}</div>
+                  <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>{tag.cantidad_piezas||'—'} piezas · {ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual} · {tag.tienda?.nombre||'—'}</div>
+                </div>
+                <button onClick={()=>setPrepackModal(null)} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:30,height:30,cursor:'pointer',fontSize:16,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+              </div>
+              <div style={{padding:'16px 20px'}}>
+                <div style={{display:'flex',gap:12,marginBottom:16}}>
+                  <div style={{width:80,height:80,borderRadius:10,flexShrink:0,background:cCSS,border:esC?'2px solid #E2E8F0':'none',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 10px rgba(0,0,0,0.12)'}}>
+                    <span style={{fontSize:11,fontWeight:700,color:txtC,textAlign:'center',lineHeight:1.2}}>{tag.color}</span>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'6px 16px',flex:1}}>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Color</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{tag.color}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Talla</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{tag.talla}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Piezas</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{tag.cantidad_piezas||'—'}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Tipo flujo</div><div style={{fontSize:11,color:'var(--ds-text-secondary)'}}>{tag.tipo_flujo||'—'}</div></div>
+                  </div>
+                </div>
+                <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Tienda destino</div>
+                  <div style={{background:'var(--ds-bg-surface-2)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-border-light)',display:'flex',gap:16,alignItems:'center'}}>
+                    <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:'var(--ds-text-primary)'}}>{tag.tienda?.nombre||'—'}</div>{(tag.tienda?.ciudad||tag.tienda?.estado)&&<div style={{fontSize:10,color:'var(--ds-text-muted)',marginTop:2}}>{[tag.tienda?.ciudad,tag.tienda?.estado].filter(Boolean).join(', ')}</div>}</div>
+                    <div style={{textAlign:'center'}}><div style={{fontSize:9,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Bahía</div><div style={{fontSize:14,fontWeight:800,color:'var(--ds-zona-auditoria)'}}>{(tag.tienda?.bahia_asignada||'—').replace('BAHIA-','B-')}</div></div>
+                  </div>
+                </div>
+                <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Estatus</div>
+                  <div style={{display:'flex',gap:8}}>
+                    <div style={{flex:1,padding:'8px 12px',borderRadius:8,background:tag.qa_fallido?'var(--ds-rojo-bg)':'var(--ds-verde-bg)',border:`1px solid ${tag.qa_fallido?'var(--ds-rojo-border)':'var(--ds-verde-border)'}`,textAlign:'center'}}>
+                      <div style={{fontSize:16,marginBottom:2}}>{tag.qa_fallido?'✗':'✓'}</div>
+                      <div style={{fontSize:10,fontWeight:700,color:tag.qa_fallido?'var(--ds-rojo-text)':'var(--ds-verde-text)'}}>{tag.qa_fallido?'QA Falló':'Calidad OK'}</div>
+                      {tag.qa_fallido&&tag.qa_motivo_fallo&&<div style={{fontSize:8,color:'var(--ds-rojo-text)',marginTop:2}}>{tag.qa_motivo_fallo}</div>}
+                    </div>
+                    <div style={{flex:1,padding:'8px 12px',borderRadius:8,background:['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'var(--ds-verde-bg)':'#F8FAFC',border:`1px solid ${['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'var(--ds-verde-border)':'var(--ds-border-light)'}`,textAlign:'center'}}>
+                      <div style={{fontSize:16,marginBottom:2}}>{['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'✓':'·'}</div>
+                      <div style={{fontSize:10,fontWeight:700,color:['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'var(--ds-verde-text)':'#64748B'}}>{['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'Entregado':'Pendiente'}</div>
+                    </div>
+                    <div style={{flex:1,padding:'8px 12px',borderRadius:8,background:'#F8FAFC',border:'1px solid var(--ds-border-light)',textAlign:'center'}}>
+                      <div style={{fontSize:14,fontWeight:800,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8',marginBottom:2}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</div>
+                      <div style={{fontSize:9,color:'#94A3B8'}}>etapa actual</div>
+                    </div>
+                  </div>
+                </div>
+                <div style={{fontSize:8,color:'#CBD5E1',textAlign:'center'}}>EPC: <code style={{fontSize:8}}>{tag.epc}</code></div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
