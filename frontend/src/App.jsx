@@ -19,7 +19,13 @@ export default function App() {
   const [tab, setTab] = useState('flujo');
   const [trazabilidadEPC, setTrazabilidadEPC] = useState(null);
   const [ocModalId, setOcModalId] = useState(null);
+  const [ocDemoData, setOcDemoData] = useState(null);
   const [paletModalId, setPaletModalId] = useState(null);
+
+  function abrirOC(ordenId, demoData = null) {
+    setOcModalId(ordenId);
+    setOcDemoData(demoData || null);
+  }
 
   function irATrazabilidad(epc) {
     setTrazabilidadEPC(epc);
@@ -51,14 +57,14 @@ export default function App() {
       </header>
 
       <main style={{ padding: '20px 24px', maxWidth: 1400, margin: '0 auto' }}>
-        {tab === 'flujo'        && <FlujoCEDIS onAbrirOC={setOcModalId} onAbrirPalet={setPaletModalId} />}
-        {tab === 'pedidos'      && <Pedidos onAbrirOC={setOcModalId} onVerHistorial={irATrazabilidad} />}
+        {tab === 'flujo'        && <FlujoCEDIS onAbrirOC={abrirOC} onAbrirPalet={setPaletModalId} />}
+        {tab === 'pedidos'      && <Pedidos onAbrirOC={abrirOC} onVerHistorial={irATrazabilidad} />}
         {tab === 'live'         && <LecturasLive />}
         {tab === 'trazabilidad' && <Trazabilidad initialEpc={trazabilidadEPC} />}
         {tab === 'vinculacion'  && <Vinculacion />}
       </main>
 
-      {ocModalId && <ModalOC ordenId={ocModalId} onClose={() => setOcModalId(null)} onVerHistorial={irATrazabilidad} />}
+      {ocModalId && <ModalOC ordenId={ocModalId} demoData={ocDemoData} onClose={() => { setOcModalId(null); setOcDemoData(null); }} onVerHistorial={irATrazabilidad} />}
       {paletModalId && <ModalPalet paletId={paletModalId} onClose={() => setPaletModalId(null)} onVerHistorial={irATrazabilidad} />}
     </div>
   );

@@ -35,12 +35,19 @@ function calcEstatusPrepack(tag) {
   };
 }
 
-export default function ModalOC({ ordenId, onClose, onVerHistorial }) {
+export default function ModalOC({ ordenId, demoData = null, onClose, onVerHistorial }) {
   const [palet, setPalet] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [expandido, setExpandido] = useState(null);
 
-  useEffect(() => { api.getPalet(ordenId).then(d=>{setPalet(d);setCargando(false);}).catch(()=>setCargando(false)); }, [ordenId]);
+  useEffect(() => {
+    if (demoData) {
+      setPalet(demoData);
+      setCargando(false);
+      return;
+    }
+    api.getPalet(ordenId).then(d=>{setPalet(d);setCargando(false);}).catch(()=>setCargando(false));
+  }, [ordenId, demoData]);
   useEffect(() => {
     const h = e => { if(e.key==='Escape') onClose(); };
     document.addEventListener('keydown',h); document.body.style.overflow='hidden';
@@ -48,8 +55,12 @@ export default function ModalOC({ ordenId, onClose, onVerHistorial }) {
   }, [onClose]);
 
   const tags = palet?.tags||[];
-  const etapaLogs = palet?.etapa_logs||[];
-  const nombre = palet?.nombre_producto||palet?.orden?.nombre_producto||palet?.orden?.modelo||ordenId;
+  const etapaLogs = palet?.etapa_logs||palet?.palet_etapa_log||[];
+  const nombre = palet?.nombre||palet?.nombre_producto||palet?.orden?.nombre_producto||palet?.orden?.modelo||ordenId;
+  const proveedor = palet?.proveedor||palet?.pedido?.proveedor?.nombre||'';
+  const totalEsperados = palet?.total_esperados||tags.length;
+  const totalRecibidos = palet?.total_recibidos||tags.length;
+  const faltantes = palet?.faltantes||0;
   const etapasActuales = ETAPAS_ORDEN.filter(e => tags.some(t => t.etapa_actual===e));
   const fallidos = tags.filter(t => t.qa_fallido);
   const tieneErr = fallidos.length>0 || etapaLogs.some(l => l.tiene_anomalia);
@@ -111,7 +122,7 @@ export default function ModalOC({ ordenId, onClose, onVerHistorial }) {
               {tieneErr&&<span style={{background:'#FEE2E2',color:'#991B1B',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:100}}>Requiere atencion</span>}
             </div>
             <div style={{fontSize:20,fontWeight:700,color:'#0F172A',marginBottom:4}}>{cargando?'...':nombre}</div>
-            <div style={{fontSize:11,color:'#94A3B8'}}>{ordenId} · {palet?.pedido?.proveedor?.nombre||''} · {tags.length} prepacks</div>
+            <div style={{fontSize:11,color:'#94A3B8'}}>{ordenId} · {proveedor} · {tags.length} prepack{tags.length!==1?'s':''}{faltantes>0&&<span style={{color:'var(--ds-rojo)',fontWeight:700,marginLeft:6}}>· {faltantes} faltante{faltantes!==1?'s':''}</span>}</div>
           </div>
           <button onClick={onClose} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:32,height:32,cursor:'pointer',fontSize:18,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
         </div>
@@ -147,6 +158,31 @@ export default function ModalOC({ ordenId, onClose, onVerHistorial }) {
             )}
             {fallidos.length>0&&<div style={{marginTop:8,fontSize:11,color:'#991B1B'}}>⚠ {fallidos.length} prepack{fallidos.length>1?'s':''} excluido{fallidos.length>1?'s':''} por QA.</div>}
           </div>
+
+          {/* VALIDACIÓN DE RECEPCIÓN — solo si hay faltantes */}
+          {faltantes > 0 && (
+            <div style={{padding:'16px 26px',borderBottom:'1px solid var(--ds-border-light)',background:'var(--ds-amarillo-bg)',borderLeft:'4px solid var(--ds-amarillo)'}}>
+              <div style={{fontSize:9,fontWeight:700,color:'var(--ds-amarillo-text)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:10}}>⚠ Validación de recepción</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:12}}>
+                <div style={{background:'#fff',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-amarillo-border)'}}>
+                  <div style={{fontSize:9,color:'var(--ds-amarillo-text)',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Esperados según OC</div>
+                  <div style={{fontSize:22,fontWeight:800,color:'var(--ds-text-primary)'}}>{totalEsperados}</div>
+                  <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>prepacks</div>
+                </div>
+                <div style={{background:'#fff',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-amarillo-border)'}}>
+                  <div style={{fontSize:9,color:'var(--ds-amarillo-text)',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Recibidos</div>
+                  <div style={{fontSize:22,fontWeight:800,color:'var(--ds-text-primary)'}}>{totalRecibidos}</div>
+                  <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>prepacks</div>
+                </div>
+                <div style={{background:'var(--ds-rojo-bg)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-rojo-border)'}}>
+                  <div style={{fontSize:9,color:'var(--ds-rojo-text)',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Faltantes</div>
+                  <div style={{fontSize:22,fontWeight:800,color:'var(--ds-rojo)'}}>{faltantes}</div>
+                  <div style={{fontSize:10,color:'var(--ds-rojo-text)'}}>no recibidos</div>
+                </div>
+              </div>
+              <div style={{fontSize:11,color:'var(--ds-amarillo-text)'}}>Se esperaban <strong>{totalEsperados}</strong> prepacks. Llegaron <strong>{totalRecibidos}</strong>. Faltan <strong style={{color:'var(--ds-rojo)'}}>{faltantes}</strong>.</div>
+            </div>
+          )}
 
           {/* HISTORIAL GENERAL — consolidado, una línea por etapa */}
           {etapaLogs.length>0&&(
