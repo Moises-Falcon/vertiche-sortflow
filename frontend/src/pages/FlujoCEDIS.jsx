@@ -82,10 +82,12 @@ const _oc = (id,nom,prov,etapas,extra={}) => {
   const tagsPorEtapa = {PREREGISTRO:[],QA:[],REGISTRO:[],SORTER:[],BAHIA:[],AUDITORIA:[],ENVIO:[],COMPLETADO:[]};
   const allTags = [];
   Object.entries(etapas).forEach(([e,tags])=>{tagsPorEtapa[e]=tags;allTags.push(...tags);});
-  // Asignar prepack_id en grupos de 4 tags (cada prepack fisico = 4 prendas distintas)
+  // Asignar prepack_id: split balanceado para que cada prepack tenga multiples colores/tallas
   const ocNum = id.replace(/[^0-9]/g,'').padStart(3,'0');
   const letras = 'ABCDEFGHIJ';
-  allTags.forEach((t,i) => { t.prepack_id = `PACK-${ocNum}-${letras[Math.floor(i/4)]}`; });
+  const nTags = allTags.length;
+  const splitPoint = nTags <= 4 ? nTags : Math.min(4, Math.ceil(nTags/2));
+  allTags.forEach((t,i) => { t.prepack_id = `PACK-${ocNum}-${letras[i < splitPoint ? 0 : 1]}`; });
   const etapasActivas = ETAPAS_FLUJO.map(e=>e.id).filter(e=>tagsPorEtapa[e]?.length>0);
   const idxMin = etapasActivas.length>0?Math.min(...etapasActivas.map(e=>ETAPA_IDX[e]??99)):0;
   const idxMax = etapasActivas.length>0?Math.max(...etapasActivas.map(e=>ETAPA_IDX[e]??0)):0;
