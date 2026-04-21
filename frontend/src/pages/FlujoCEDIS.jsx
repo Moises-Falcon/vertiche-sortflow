@@ -68,34 +68,80 @@ function buildOC(palet) {
 
 // ─── Datos estáticos de demo ────────────────────────────────────────────────
 
-let _bahiaCounter = 0;
-const _t = (n,c,s,b,ci,e) => {_bahiaCounter=(_bahiaCounter%10)+1; return {epc:`DEMO-${Math.random().toString(36).slice(2,8)}`,color:n,talla:c,qa_fallido:false,etapa_actual:s,cantidad_piezas:1,tipo_flujo:'CROSS_DOCK',sku:`${n.substring(0,3).toUpperCase()}-${c}`,tienda:{nombre:`Vértice ${b}`,ciudad:ci,estado:e,bahia_asignada:`BAHIA-${_bahiaCounter}`},anomalias:[]};};
-const _te = (n,c,s,b,ci,e) => ({..._t(n,c,s,b,ci,e),qa_fallido:true,qa_motivo_fallo:'Prenda defectuosa'});
-
 function ts(horaBase, minutosOffset=0) {
   const d=new Date(); d.setHours(Math.floor(horaBase),(horaBase%1)*60+minutosOffset,0,0); return d.toISOString();
 }
 function mkLog(etapa,hE,hS=null,pE=0,pS=null) {
   return {etapa,timestamp_entrada:ts(hE),timestamp_salida:hS!==null?ts(hS):null,prepacks_entrada:pE,prepacks_salida:pS!==null?pS:pE,tiene_anomalia:false,notas:''};
 }
-const _oc = (id,nom,prov,etapas,extra={}) => {
+
+// Cada prepack = 1 etiqueta RFID que contiene varias prendas distintas
+let _epcCounter = 0;
+function mkPrepack(epc, etapa, tienda, prendas) {
+  _epcCounter++;
+  const colores = [...new Set(prendas.map(p => p.color))];
+  const tallas  = [...new Set(prendas.map(p => p.talla))];
+  return {
+    epc, etapa_actual: etapa, qa_fallido: false, anomalias: [],
+    prendas, tienda, colores, tallas,
+    total_prendas: prendas.length, cantidad_piezas: prendas.length,
+    color: colores[0], talla: tallas.join('/'),
+    tipo_flujo: 'CROSS_DOCK',
+    sku: `${(colores[0]||'X').substring(0,3).toUpperCase()}-${tallas[0]||'X'}`,
+  };
+}
+function mkPrepackError(epc, etapa, tienda, prendas) {
+  return { ...mkPrepack(epc, etapa, tienda, prendas), qa_fallido: true, qa_motivo_fallo: 'Prenda defectuosa' };
+}
+
+const TIENDAS = {
+  MTY_CENTRO:  { nombre:'Vértice Monterrey Centro',  ciudad:'Monterrey',       estado:'NL',   estado_rep:'NL',   bahia_asignada:'BAHIA-1' },
+  MTY_SUR:     { nombre:'Vértice Monterrey Sur',     ciudad:'Monterrey',       estado:'NL',   estado_rep:'NL',   bahia_asignada:'BAHIA-1' },
+  SAN_PEDRO:   { nombre:'Vértice San Pedro',          ciudad:'San Pedro',       estado:'NL',   estado_rep:'NL',   bahia_asignada:'BAHIA-2' },
+  SALTILLO:    { nombre:'Vértice Saltillo',           ciudad:'Saltillo',        estado:'COAH', estado_rep:'COAH', bahia_asignada:'BAHIA-2' },
+  GUADALAJARA: { nombre:'Vértice Guadalajara',        ciudad:'Guadalajara',     estado:'JAL',  estado_rep:'JAL',  bahia_asignada:'BAHIA-3' },
+  ZAPOPAN:     { nombre:'Vértice Zapopan',            ciudad:'Zapopan',         estado:'JAL',  estado_rep:'JAL',  bahia_asignada:'BAHIA-3' },
+  CDMX_POL:    { nombre:'Vértice CDMX Polanco',       ciudad:'CDMX',            estado:'CDMX', estado_rep:'CDMX', bahia_asignada:'BAHIA-4' },
+  CDMX_ROM:    { nombre:'Vértice CDMX Roma',          ciudad:'CDMX',            estado:'CDMX', estado_rep:'CDMX', bahia_asignada:'BAHIA-4' },
+  PUEBLA:      { nombre:'Vértice Puebla',             ciudad:'Puebla',          estado:'PUE',  estado_rep:'PUE',  bahia_asignada:'BAHIA-5' },
+  QUERETARO:   { nombre:'Vértice Querétaro',          ciudad:'Querétaro',       estado:'QRO',  estado_rep:'QRO',  bahia_asignada:'BAHIA-5' },
+  SLP:         { nombre:'Vértice San Luis Potosí',    ciudad:'San Luis Potosí', estado:'SLP',  estado_rep:'SLP',  bahia_asignada:'BAHIA-6' },
+  AGUASC:      { nombre:'Vértice Aguascalientes',     ciudad:'Aguascalientes',  estado:'AGS',  estado_rep:'AGS',  bahia_asignada:'BAHIA-6' },
+  HERMOSILLO:  { nombre:'Vértice Hermosillo',         ciudad:'Hermosillo',      estado:'SON',  estado_rep:'SON',  bahia_asignada:'BAHIA-7' },
+  CULIACAN:    { nombre:'Vértice Culiacán',           ciudad:'Culiacán',        estado:'SIN',  estado_rep:'SIN',  bahia_asignada:'BAHIA-7' },
+  TIJUANA:     { nombre:'Vértice Tijuana',            ciudad:'Tijuana',         estado:'BC',   estado_rep:'BC',   bahia_asignada:'BAHIA-8' },
+  MEXICALI:    { nombre:'Vértice Mexicali',           ciudad:'Mexicali',        estado:'BC',   estado_rep:'BC',   bahia_asignada:'BAHIA-8' },
+  MERIDA:      { nombre:'Vértice Mérida',             ciudad:'Mérida',          estado:'YUC',  estado_rep:'YUC',  bahia_asignada:'BAHIA-9' },
+  CANCUN:      { nombre:'Vértice Cancún',             ciudad:'Cancún',          estado:'QROO', estado_rep:'QROO', bahia_asignada:'BAHIA-9' },
+  CHIHUAHUA:   { nombre:'Vértice Chihuahua',          ciudad:'Chihuahua',       estado:'CHIH', estado_rep:'CHIH', bahia_asignada:'BAHIA-10' },
+  JUAREZ:      { nombre:'Vértice Ciudad Juárez',      ciudad:'Cd. Juárez',      estado:'CHIH', estado_rep:'CHIH', bahia_asignada:'BAHIA-10' },
+};
+
+// Construye una OC completa a partir de los prepacks por etapa
+function mkOC(id, nom, prov, etapas, extra={}) {
   const tagsPorEtapa = {PREREGISTRO:[],QA:[],REGISTRO:[],SORTER:[],BAHIA:[],AUDITORIA:[],ENVIO:[],COMPLETADO:[]};
-  const allTags = [];
-  Object.entries(etapas).forEach(([e,tags])=>{tagsPorEtapa[e]=tags;allTags.push(...tags);});
-  // Asignar prepack_id: split balanceado para que cada prepack tenga multiples colores/tallas
-  const ocNum = id.replace(/[^0-9]/g,'').padStart(3,'0');
-  const letras = 'ABCDEFGHIJ';
-  const nTags = allTags.length;
-  const splitPoint = nTags <= 4 ? nTags : Math.min(4, Math.ceil(nTags/2));
-  allTags.forEach((t,i) => { t.prepack_id = `PACK-${ocNum}-${letras[i < splitPoint ? 0 : 1]}`; });
+  Object.entries(etapas).forEach(([e,prepacks])=>{ tagsPorEtapa[e] = prepacks; });
+  const allTags = Object.values(tagsPorEtapa).flat();
   const etapasActivas = ETAPAS_FLUJO.map(e=>e.id).filter(e=>tagsPorEtapa[e]?.length>0);
   const idxMin = etapasActivas.length>0?Math.min(...etapasActivas.map(e=>ETAPA_IDX[e]??99)):0;
   const idxMax = etapasActivas.length>0?Math.max(...etapasActivas.map(e=>ETAPA_IDX[e]??0)):0;
   const comp = allTags.filter(t=>['ENVIO','COMPLETADO'].includes(t.etapa_actual)).length;
-  return {ordenId:id,nombre:nom,nombre_producto:nom,proveedor:prov,totalPrepacks:allTags.length,pct:allTags.length>0?(comp/allTags.length)*100:0,hasErr:allTags.some(t=>t.qa_fallido),tags:allTags,tagsPorEtapa,etapasActivas,idxMin,idxMax,
-    etapa_logs:extra.etapa_logs||[],total_esperados:extra.total_esperados||allTags.length,total_recibidos:extra.total_recibidos||allTags.length,faltantes:extra.faltantes||0,
-    orden:{orden_id:id,nombre_producto:nom,foto_url:null},pedido:{pedido_id:'PED-DEMO',proveedor:{nombre:prov}},pedido_id:'PED-DEMO',palet_id:id,estado:comp===allTags.length&&allTags.length>0?'DESPACHADO':'ACTIVO'};
-};
+  return {
+    ordenId:id, nombre:nom, nombre_producto:nom, proveedor:prov,
+    totalPrepacks:allTags.length,
+    pct:allTags.length>0?(comp/allTags.length)*100:0,
+    hasErr:allTags.some(t=>t.qa_fallido),
+    tags:allTags, tagsPorEtapa, etapasActivas, idxMin, idxMax,
+    etapa_logs:extra.etapa_logs||[],
+    total_esperados:extra.total_esperados||allTags.length,
+    total_recibidos:extra.total_recibidos||allTags.length,
+    faltantes:extra.faltantes||0,
+    orden:{orden_id:id,nombre_producto:nom,foto_url:null},
+    pedido:{pedido_id:'PED-DEMO',proveedor:{nombre:prov}},
+    pedido_id:'PED-DEMO', palet_id:id,
+    estado:comp===allTags.length&&allTags.length>0?'DESPACHADO':'ACTIVO',
+  };
+}
 
 const DEMO_KPI = {
   mejora_porcentaje: 30.6,
@@ -106,31 +152,210 @@ const DEMO_KPI = {
 };
 
 const DEMO_OCS = [
-  _oc('OC-001','Playera Básica Manga Corta','Textiles Monterrey SA',{PREREGISTRO:[_t('Azul','M','PREREGISTRO','Monterrey Centro','Monterrey','NL'),_t('Azul','L','PREREGISTRO','Monterrey Sur','Monterrey','NL'),_t('Negro','S','PREREGISTRO','San Pedro','San Pedro','NL'),_t('Negro','M','PREREGISTRO','Guadalajara','Guadalajara','JAL'),_t('Blanco','XS','PREREGISTRO','CDMX Polanco','CDMX','CDMX'),_t('Blanco','S','PREREGISTRO','CDMX Roma','CDMX','CDMX'),_t('Rojo','M','PREREGISTRO','Puebla','Puebla','PUE'),_t('Rojo','L','PREREGISTRO','Querétaro','Querétaro','QRO')]},{etapa_logs:[mkLog('PREREGISTRO',9.5,null,8,null)]}),
-  _oc('OC-002','Pantalón Cargo Denim Slim','Confecciones del Norte',{PREREGISTRO:[_t('Azul','28','PREREGISTRO','Hermosillo','Hermosillo','SON'),_t('Azul','30','PREREGISTRO','Culiacán','Culiacán','SIN'),_t('Negro','32','PREREGISTRO','Tijuana','Tijuana','BC'),_t('Negro','34','PREREGISTRO','Mexicali','Mexicali','BC'),_t('Café','30','PREREGISTRO','Ensenada','Ensenada','BC'),_t('Café','32','PREREGISTRO','La Paz','La Paz','BCS')]},{etapa_logs:[mkLog('PREREGISTRO',9.75,null,6,null)]}),
-  _oc('OC-003','Blusa Fluida Manga Larga','Moda Express MX',{PREREGISTRO:[_t('Blanco','S','PREREGISTRO','Monterrey Centro','Monterrey','NL'),_t('Blanco','M','PREREGISTRO','San Pedro','San Pedro','NL'),_t('Rosa','S','PREREGISTRO','Guadalajara','Guadalajara','JAL'),_t('Rosa','M','PREREGISTRO','CDMX Polanco','CDMX','CDMX'),_t('Azul','L','PREREGISTRO','Puebla','Puebla','PUE')]},{total_esperados:7,total_recibidos:5,faltantes:2,etapa_logs:[mkLog('PREREGISTRO',10.0,null,5,null)]}),
-  _oc('OC-004','Chamarra Impermeable Sport','ActiveWear CDMX',{PREREGISTRO:[_t('Negro','M','PREREGISTRO','Monterrey Norte','Monterrey','NL'),_t('Negro','L','PREREGISTRO','Saltillo','Saltillo','COAH'),_t('Gris','M','PREREGISTRO','Torreón','Torreón','COAH'),_t('Gris','XL','PREREGISTRO','Durango','Durango','DGO')]},{etapa_logs:[mkLog('PREREGISTRO',10.25,null,4,null)]}),
-  _oc('OC-005','Vestido Casual Verano','Diseños Guadalajara',{PREREGISTRO:[_t('Verde','S','PREREGISTRO','Monterrey Centro','Monterrey','NL'),_t('Verde','M','PREREGISTRO','San Pedro','San Pedro','NL')],QA:[_t('Amarillo','S','QA','Guadalajara','Guadalajara','JAL'),_t('Amarillo','M','QA','Zapopan','Zapopan','JAL'),_t('Azul','S','QA','CDMX Polanco','CDMX','CDMX'),_t('Azul','M','QA','CDMX Roma','CDMX','CDMX'),_t('Blanco','L','QA','Puebla','Puebla','PUE')]},{etapa_logs:[mkLog('PREREGISTRO',8.5,9.0,7,7),mkLog('QA',9.0,null,7,null)]}),
-  _oc('OC-006','Polo Piqué Hombre','Textiles Monterrey SA',{QA:[_te('Azul','M','QA','Hermosillo','Hermosillo','SON'),_t('Azul','L','QA','Culiacán','Culiacán','SIN'),_t('Blanco','S','QA','Tijuana','Tijuana','BC'),_t('Blanco','M','QA','Mexicali','Mexicali','BC'),_t('Negro','L','QA','Ensenada','Ensenada','BC'),_t('Negro','XL','QA','La Paz','La Paz','BCS')]},{total_esperados:8,total_recibidos:6,faltantes:2,etapa_logs:[mkLog('PREREGISTRO',8.25,8.75,6,6),{...mkLog('QA',8.75,null,6,null),tiene_anomalia:true}]}),
-  _oc('OC-007','Short Deportivo Running','ActiveWear CDMX',{QA:[_t('Negro','S','QA','Monterrey Centro','Monterrey','NL'),_t('Negro','M','QA','Monterrey Sur','Monterrey','NL'),_t('Azul','S','QA','San Pedro','San Pedro','NL'),_t('Azul','M','QA','Saltillo','Saltillo','COAH'),_t('Rojo','L','QA','Torreón','Torreón','COAH')]},{etapa_logs:[mkLog('PREREGISTRO',8.75,9.25,5,5),mkLog('QA',9.25,null,5,null)]}),
-  _oc('OC-008','Playera Estampada Temporada','Estampados MX',{QA:[_t('Blanco','S','QA','Guadalajara','Guadalajara','JAL'),_t('Blanco','M','QA','Zapopan','Zapopan','JAL'),_t('Gris','L','QA','León','León','GTO')],REGISTRO:[_t('Gris','XL','REGISTRO','Irapuato','Irapuato','GTO'),_t('Verde','S','REGISTRO','Celaya','Celaya','GTO'),_t('Verde','M','REGISTRO','Querétaro','Querétaro','QRO'),_t('Azul','L','REGISTRO','SLP','San Luis Potosí','SLP'),_t('Azul','XS','REGISTRO','Aguascalientes','Aguascalientes','AGS')]},{etapa_logs:[mkLog('PREREGISTRO',7.5,8.0,8,8),mkLog('QA',8.0,8.5,8,8),mkLog('REGISTRO',8.5,null,8,null)]}),
-  _oc('OC-009','Pantalón Chino Slim Fit','Confecciones del Norte',{REGISTRO:[_t('Beige','30','REGISTRO','Monterrey Centro','Monterrey','NL'),_t('Beige','32','REGISTRO','Monterrey Sur','Monterrey','NL'),_t('Verde','30','REGISTRO','San Pedro','San Pedro','NL'),_t('Verde','34','REGISTRO','Guadalajara','Guadalajara','JAL'),_t('Azul','32','REGISTRO','Zapopan','Zapopan','JAL'),_t('Azul','36','REGISTRO','CDMX Polanco','CDMX','CDMX')]},{etapa_logs:[mkLog('PREREGISTRO',7.75,8.25,6,6),mkLog('QA',8.25,8.75,6,6),mkLog('REGISTRO',8.75,null,6,null)]}),
-  _oc('OC-010','Sudadera Hoodie Oversize','Urban Trends MX',{REGISTRO:[_t('Negro','S','REGISTRO','CDMX Roma','CDMX','CDMX'),_t('Negro','M','REGISTRO','CDMX Satélite','CDMX','CDMX'),_t('Gris','M','REGISTRO','Puebla','Puebla','PUE'),_t('Gris','L','REGISTRO','Tlaxcala','Tlaxcala','TLAX'),_t('Azul','XL','REGISTRO','Veracruz','Veracruz','VER'),_t('Azul','XXL','REGISTRO','Xalapa','Xalapa','VER'),_t('Blanco','S','REGISTRO','Oaxaca','Oaxaca','OAX')]},{etapa_logs:[mkLog('PREREGISTRO',7.25,7.75,7,7),mkLog('QA',7.75,8.25,7,7),mkLog('REGISTRO',8.25,null,7,null)]}),
-  _oc('OC-011','Camiseta Básica Pack x3','Textiles Monterrey SA',{REGISTRO:[_te('Blanco','S','REGISTRO','Mérida','Mérida','YUC'),_t('Blanco','M','REGISTRO','Cancún','Cancún','QROO'),_t('Negro','S','REGISTRO','Playa Carmen','Playa del Carmen','QROO'),_t('Negro','M','REGISTRO','Campeche','Campeche','CAMP'),_t('Gris','L','REGISTRO','Villahermosa','Villahermosa','TAB')]},{total_esperados:6,total_recibidos:5,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',8.0,8.5,5,5),mkLog('QA',8.5,9.0,5,5),{...mkLog('REGISTRO',9.0,null,5,null),tiene_anomalia:true}]}),
-  _oc('OC-012','Blusa Campesina Bordada','Moda Express MX',{REGISTRO:[_t('Blanco','S','REGISTRO','Monterrey Centro','Monterrey','NL'),_t('Blanco','M','REGISTRO','San Pedro','San Pedro','NL'),_t('Rosa','S','REGISTRO','Saltillo','Saltillo','COAH')],SORTER:[_t('Rosa','M','SORTER','Torreón','Torreón','COAH'),_t('Azul','S','SORTER','Durango','Durango','DGO'),_t('Azul','M','SORTER','Chihuahua','Chihuahua','CHIH'),_t('Verde','L','SORTER','Juárez','Ciudad Juárez','CHIH'),_t('Verde','XL','SORTER','Monterrey Norte','Monterrey','NL')]},{etapa_logs:[mkLog('PREREGISTRO',6.5,7.0,8,8),mkLog('QA',7.0,7.5,8,8),mkLog('REGISTRO',7.5,8.0,8,8),mkLog('SORTER',8.0,null,8,null)]}),
-  _oc('OC-013','Jean Skinny Mujer','Diseños Guadalajara',{SORTER:[_t('Azul Oscuro','25','SORTER','Guadalajara','Guadalajara','JAL'),_t('Azul Oscuro','27','SORTER','Zapopan','Zapopan','JAL'),_t('Negro','25','SORTER','León','León','GTO'),_t('Negro','27','SORTER','Irapuato','Irapuato','GTO'),_t('Gris','29','SORTER','Celaya','Celaya','GTO'),_t('Gris','31','SORTER','Querétaro','Querétaro','QRO')]},{etapa_logs:[mkLog('PREREGISTRO',6.75,7.25,6,6),mkLog('QA',7.25,7.75,6,6),mkLog('REGISTRO',7.75,8.25,6,6),mkLog('SORTER',8.25,null,6,null)]}),
-  _oc('OC-014','Playera Polo Sport','ActiveWear CDMX',{SORTER:[_t('Blanco','M','SORTER','Hermosillo','Hermosillo','SON'),_t('Blanco','L','SORTER','Culiacán','Culiacán','SIN')],BAHIA:[_t('Azul','S','BAHIA','Tijuana','Tijuana','BC'),_t('Azul','M','BAHIA','Mexicali','Mexicali','BC'),_t('Negro','XL','BAHIA','Ensenada','Ensenada','BC')]},{etapa_logs:[mkLog('PREREGISTRO',6.25,6.75,5,5),mkLog('QA',6.75,7.25,5,5),mkLog('REGISTRO',7.25,7.75,5,5),mkLog('SORTER',7.75,null,5,null),mkLog('BAHIA',8.5,null,3,null)]}),
-  _oc('OC-015','Shorts Playa Tropical','Estampados MX',{BAHIA:[_t('Azul','S','BAHIA','Monterrey Centro','Monterrey','NL'),_t('Azul','M','BAHIA','Monterrey Sur','Monterrey','NL'),_t('Verde','S','BAHIA','San Pedro','San Pedro','NL'),_t('Verde','M','BAHIA','Guadalajara','Guadalajara','JAL'),_t('Naranja','L','BAHIA','Zapopan','Zapopan','JAL'),_t('Naranja','XL','BAHIA','León','León','GTO'),_t('Rojo','M','BAHIA','CDMX Polanco','CDMX','CDMX')]},{etapa_logs:[mkLog('PREREGISTRO',6.0,6.5,7,7),mkLog('QA',6.5,7.0,7,7),mkLog('REGISTRO',7.0,7.5,7,7),mkLog('SORTER',7.5,8.0,7,7),mkLog('BAHIA',8.0,null,7,null)]}),
-  _oc('OC-016','Falda Midi Plisada','Diseños Guadalajara',{SORTER:[_t('Rosa','S','SORTER','CDMX Roma','CDMX','CDMX'),_t('Rosa','M','SORTER','Puebla','Puebla','PUE')],BAHIA:[_t('Beige','S','BAHIA','Querétaro','Querétaro','QRO'),_t('Beige','M','BAHIA','SLP','San Luis Potosí','SLP'),_t('Negro','L','BAHIA','Aguascalientes','Aguascalientes','AGS'),_t('Negro','XL','BAHIA','Zacatecas','Zacatecas','ZAC')]},{etapa_logs:[mkLog('PREREGISTRO',6.25,6.75,6,6),mkLog('QA',6.75,7.25,6,6),mkLog('REGISTRO',7.25,7.75,6,6),mkLog('SORTER',7.75,null,6,null),mkLog('BAHIA',8.25,null,4,null)]}),
-  _oc('OC-017','Chamarra Denim Oversize','Urban Trends MX',{BAHIA:[_t('Azul','S','BAHIA','Hermosillo','Hermosillo','SON'),_t('Azul','M','BAHIA','Culiacán','Culiacán','SIN'),_t('Negro','L','BAHIA','Tijuana','Tijuana','BC'),_t('Negro','XL','BAHIA','Mexicali','Mexicali','BC'),_t('Blanco','M','BAHIA','La Paz','La Paz','BCS')]},{etapa_logs:[mkLog('PREREGISTRO',5.75,6.25,5,5),mkLog('QA',6.25,6.75,5,5),mkLog('REGISTRO',6.75,7.25,5,5),mkLog('SORTER',7.25,7.75,5,5),mkLog('BAHIA',7.75,null,5,null)]}),
-  _oc('OC-018','Playera Básica Premium','Textiles Monterrey SA',{BAHIA:[_t('Blanco','S','BAHIA','Monterrey Centro','Monterrey','NL'),_t('Blanco','M','BAHIA','San Pedro','San Pedro','NL'),_t('Negro','L','BAHIA','Saltillo','Saltillo','COAH')],AUDITORIA:[_t('Negro','XL','AUDITORIA','Torreón','Torreón','COAH'),_t('Gris','S','AUDITORIA','Chihuahua','Chihuahua','CHIH'),_t('Gris','M','AUDITORIA','Juárez','Ciudad Juárez','CHIH'),_t('Azul','S','AUDITORIA','Durango','Durango','DGO')]},{etapa_logs:[mkLog('PREREGISTRO',5.0,5.5,7,7),mkLog('QA',5.5,6.0,7,7),mkLog('REGISTRO',6.0,6.5,7,7),mkLog('SORTER',6.5,7.0,7,7),mkLog('BAHIA',7.0,null,7,null),mkLog('AUDITORIA',7.75,null,4,null)]}),
-  _oc('OC-019','Pantalón Vestir Slim','Confecciones del Norte',{AUDITORIA:[_te('Negro','30','AUDITORIA','Guadalajara','Guadalajara','JAL'),_t('Negro','32','AUDITORIA','Zapopan','Zapopan','JAL'),_t('Gris','30','AUDITORIA','CDMX Polanco','CDMX','CDMX'),_t('Gris','34','AUDITORIA','Puebla','Puebla','PUE'),_t('Azul','32','AUDITORIA','Querétaro','Querétaro','QRO'),_t('Azul','36','AUDITORIA','SLP','San Luis Potosí','SLP')]},{total_esperados:8,total_recibidos:6,faltantes:2,etapa_logs:[mkLog('PREREGISTRO',5.25,5.75,6,6),mkLog('QA',5.75,6.25,6,6),mkLog('REGISTRO',6.25,6.75,6,6),mkLog('SORTER',6.75,7.25,6,6),mkLog('BAHIA',7.25,7.75,6,6),{...mkLog('AUDITORIA',7.75,null,6,null),tiene_anomalia:true}]}),
-  _oc('OC-020','Blusa Casual Rayas','Moda Express MX',{AUDITORIA:[_t('Azul','S','AUDITORIA','Hermosillo','Hermosillo','SON'),_t('Azul','M','AUDITORIA','Culiacán','Culiacán','SIN'),_t('Rojo','S','AUDITORIA','Tijuana','Tijuana','BC'),_t('Rojo','M','AUDITORIA','Mexicali','Mexicali','BC'),_t('Blanco','L','AUDITORIA','Ensenada','Ensenada','BC')]},{etapa_logs:[mkLog('PREREGISTRO',5.5,6.0,5,5),mkLog('QA',6.0,6.5,5,5),mkLog('REGISTRO',6.5,7.0,5,5),mkLog('SORTER',7.0,7.5,5,5),mkLog('BAHIA',7.5,8.0,5,5),mkLog('AUDITORIA',8.0,null,5,null)]}),
-  _oc('OC-021','Sudadera Crew Neck Básica','Urban Trends MX',{AUDITORIA:[_t('Gris','S','AUDITORIA','Monterrey Norte','Monterrey','NL'),_t('Gris','M','AUDITORIA','Monterrey Sur','Monterrey','NL')],ENVIO:[_t('Negro','S','ENVIO','San Pedro','San Pedro','NL'),_t('Negro','M','ENVIO','Guadalajara','Guadalajara','JAL'),_t('Azul','L','ENVIO','CDMX Polanco','CDMX','CDMX'),_t('Azul','XL','ENVIO','Puebla','Puebla','PUE')]},{etapa_logs:[mkLog('PREREGISTRO',4.75,5.25,6,6),mkLog('QA',5.25,5.75,6,6),mkLog('REGISTRO',5.75,6.25,6,6),mkLog('SORTER',6.25,6.75,6,6),mkLog('BAHIA',6.75,7.25,6,6),mkLog('AUDITORIA',7.25,null,6,null),mkLog('ENVIO',7.75,null,4,null)]}),
-  _oc('OC-022','Pantalón Jogger Tech','ActiveWear CDMX',{ENVIO:[_t('Negro','S','ENVIO','Hermosillo','Hermosillo','SON'),_t('Negro','M','ENVIO','Culiacán','Culiacán','SIN'),_t('Gris','L','ENVIO','Tijuana','Tijuana','BC'),_t('Gris','XL','ENVIO','Mexicali','Mexicali','BC'),_t('Azul','M','ENVIO','Ensenada','Ensenada','BC'),_t('Azul','L','ENVIO','La Paz','La Paz','BCS'),_t('Verde','S','ENVIO','Los Cabos','Los Cabos','BCS')]},{etapa_logs:[mkLog('PREREGISTRO',4.0,4.5,7,7),mkLog('QA',4.5,5.0,7,7),mkLog('REGISTRO',5.0,5.5,7,7),mkLog('SORTER',5.5,6.0,7,7),mkLog('BAHIA',6.0,6.75,7,7),mkLog('AUDITORIA',6.75,7.25,7,7),mkLog('ENVIO',7.25,null,7,null)]}),
-  _oc('OC-023','Vestido Formal Noche','Diseños Guadalajara',{ENVIO:[_t('Negro','S','ENVIO','Monterrey Centro','Monterrey','NL'),_t('Negro','M','ENVIO','San Pedro','San Pedro','NL'),_t('Rojo','S','ENVIO','Guadalajara','Guadalajara','JAL'),_t('Rojo','M','ENVIO','CDMX Polanco','CDMX','CDMX'),_t('Azul Marino','L','ENVIO','Puebla','Puebla','PUE')]},{etapa_logs:[mkLog('PREREGISTRO',4.25,4.75,5,5),mkLog('QA',4.75,5.25,5,5),mkLog('REGISTRO',5.25,5.75,5,5),mkLog('SORTER',5.75,6.25,5,5),mkLog('BAHIA',6.25,7.0,5,5),mkLog('AUDITORIA',7.0,7.5,5,5),mkLog('ENVIO',7.5,8.0,5,5)]}),
-  _oc('OC-024','Playera Manga Larga UV','Textiles Monterrey SA',{ENVIO:[_t('Blanco','S','ENVIO','Querétaro','Querétaro','QRO'),_t('Blanco','M','ENVIO','SLP','San Luis Potosí','SLP'),_te('Azul','S','ENVIO','Aguascalientes','Aguascalientes','AGS'),_t('Azul','M','ENVIO','Zacatecas','Zacatecas','ZAC'),_t('Negro','L','ENVIO','Durango','Durango','DGO'),_t('Negro','XL','ENVIO','Chihuahua','Chihuahua','CHIH')]},{total_esperados:7,total_recibidos:6,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',3.75,4.25,6,6),mkLog('QA',4.25,4.75,6,6),mkLog('REGISTRO',4.75,5.25,6,6),mkLog('SORTER',5.25,5.75,6,6),mkLog('BAHIA',5.75,6.5,6,6),mkLog('AUDITORIA',6.5,7.0,6,6),{...mkLog('ENVIO',7.0,null,6,null),tiene_anomalia:true}]}),
-  _oc('OC-025','Short Gym Hombre','ActiveWear CDMX',{AUDITORIA:[_t('Negro','S','AUDITORIA','Mérida','Mérida','YUC'),_t('Negro','M','AUDITORIA','Cancún','Cancún','QROO')],ENVIO:[_t('Azul','S','ENVIO','Playa Carmen','Playa del Carmen','QROO'),_t('Azul','M','ENVIO','Campeche','Campeche','CAMP'),_t('Gris','L','ENVIO','Villahermosa','Villahermosa','TAB')]},{etapa_logs:[mkLog('PREREGISTRO',4.5,5.0,5,5),mkLog('QA',5.0,5.5,5,5),mkLog('REGISTRO',5.5,6.0,5,5),mkLog('SORTER',6.0,6.5,5,5),mkLog('BAHIA',6.5,7.0,5,5),mkLog('AUDITORIA',7.0,null,5,null),mkLog('ENVIO',7.5,null,3,null)]}),
+  // ── PRE-REGISTRO ────────────────────────────────────────────────────────
+  mkOC('OC-001','Playera Básica Manga Corta','Textiles Monterrey SA',{
+    PREREGISTRO:[
+      mkPrepack('E001A','PREREGISTRO',TIENDAS.MTY_CENTRO,[{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Negro',talla:'S'},{color:'Negro',talla:'L'}]),
+      mkPrepack('E001B','PREREGISTRO',TIENDAS.SAN_PEDRO,[{color:'Blanco',talla:'XS'},{color:'Blanco',talla:'S'},{color:'Rojo',talla:'M'},{color:'Rojo',talla:'L'}]),
+      mkPrepack('E001C','PREREGISTRO',TIENDAS.GUADALAJARA,[{color:'Verde',talla:'S'},{color:'Verde',talla:'M'},{color:'Azul',talla:'XL'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',9.5,null,3,null)]}),
+
+  mkOC('OC-002','Pantalón Cargo Denim Slim','Confecciones del Norte',{
+    PREREGISTRO:[
+      mkPrepack('E002A','PREREGISTRO',TIENDAS.HERMOSILLO,[{color:'Azul',talla:'28'},{color:'Azul',talla:'30'},{color:'Negro',talla:'32'},{color:'Negro',talla:'34'}]),
+      mkPrepack('E002B','PREREGISTRO',TIENDAS.TIJUANA,[{color:'Café',talla:'30'},{color:'Café',talla:'32'},{color:'Azul',talla:'36'}]),
+    ],
+  },{total_esperados:3,total_recibidos:2,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',9.75,null,2,null)]}),
+
+  mkOC('OC-003','Blusa Fluida Manga Larga','Moda Express MX',{
+    PREREGISTRO:[
+      mkPrepack('E003A','PREREGISTRO',TIENDAS.CDMX_POL,[{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'},{color:'Rosa',talla:'S'},{color:'Rosa',talla:'M'}]),
+      mkPrepack('E003B','PREREGISTRO',TIENDAS.PUEBLA,[{color:'Azul',talla:'L'},{color:'Azul',talla:'XL'},{color:'Blanco',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',10.0,null,2,null)]}),
+
+  mkOC('OC-004','Chamarra Impermeable Sport','ActiveWear CDMX',{
+    PREREGISTRO:[
+      mkPrepack('E004A','PREREGISTRO',TIENDAS.MTY_SUR,[{color:'Negro',talla:'M'},{color:'Negro',talla:'L'},{color:'Gris',talla:'M'},{color:'Gris',talla:'XL'}]),
+      mkPrepack('E004B','PREREGISTRO',TIENDAS.SALTILLO,[{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Negro',talla:'XL'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',10.25,null,2,null)]}),
+
+  // ── QA ───────────────────────────────────────────────────────────────────
+  mkOC('OC-005','Vestido Casual Verano','Diseños Guadalajara',{
+    PREREGISTRO:[
+      mkPrepack('E005A','PREREGISTRO',TIENDAS.MTY_CENTRO,[{color:'Verde',talla:'S'},{color:'Verde',talla:'M'},{color:'Amarillo',talla:'S'}]),
+    ],
+    QA:[
+      mkPrepack('E005B','QA',TIENDAS.GUADALAJARA,[{color:'Amarillo',talla:'M'},{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Blanco',talla:'L'}]),
+      mkPrepack('E005C','QA',TIENDAS.ZAPOPAN,[{color:'Blanco',talla:'S'},{color:'Rosa',talla:'M'},{color:'Rosa',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',8.5,9.0,3,3),mkLog('QA',9.0,null,2,null)]}),
+
+  mkOC('OC-006','Polo Piqué Hombre','Textiles Monterrey SA',{
+    QA:[
+      mkPrepackError('E006A','QA',TIENDAS.HERMOSILLO,[{color:'Azul',talla:'M'},{color:'Azul',talla:'L'},{color:'Blanco',talla:'S'}]),
+      mkPrepack('E006B','QA',TIENDAS.CULIACAN,[{color:'Blanco',talla:'M'},{color:'Negro',talla:'L'},{color:'Negro',talla:'XL'}]),
+    ],
+  },{total_esperados:3,total_recibidos:2,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',8.25,8.75,2,2),{...mkLog('QA',8.75,null,2,null),tiene_anomalia:true}]}),
+
+  mkOC('OC-007','Short Deportivo Running','ActiveWear CDMX',{
+    QA:[
+      mkPrepack('E007A','QA',TIENDAS.SAN_PEDRO,[{color:'Negro',talla:'S'},{color:'Negro',talla:'M'},{color:'Azul',talla:'S'},{color:'Azul',talla:'M'}]),
+      mkPrepack('E007B','QA',TIENDAS.SALTILLO,[{color:'Rojo',talla:'L'},{color:'Rojo',talla:'XL'},{color:'Negro',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',8.75,9.25,2,2),mkLog('QA',9.25,null,2,null)]}),
+
+  // ── REGISTRO ─────────────────────────────────────────────────────────────
+  mkOC('OC-008','Playera Estampada Temporada','Estampados MX',{
+    QA:[
+      mkPrepack('E008A','QA',TIENDAS.GUADALAJARA,[{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'},{color:'Gris',talla:'L'}]),
+    ],
+    REGISTRO:[
+      mkPrepack('E008B','REGISTRO',TIENDAS.SLP,[{color:'Gris',talla:'XL'},{color:'Verde',talla:'S'},{color:'Verde',talla:'M'},{color:'Azul',talla:'L'}]),
+      mkPrepack('E008C','REGISTRO',TIENDAS.QUERETARO,[{color:'Azul',talla:'XS'},{color:'Rojo',talla:'S'},{color:'Rojo',talla:'M'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',7.5,8.0,3,3),mkLog('QA',8.0,8.5,3,3),mkLog('REGISTRO',8.5,null,2,null)]}),
+
+  mkOC('OC-009','Pantalón Chino Slim Fit','Confecciones del Norte',{
+    REGISTRO:[
+      mkPrepack('E009A','REGISTRO',TIENDAS.MTY_CENTRO,[{color:'Beige',talla:'30'},{color:'Beige',talla:'32'},{color:'Verde',talla:'30'},{color:'Verde',talla:'34'}]),
+      mkPrepack('E009B','REGISTRO',TIENDAS.CDMX_POL,[{color:'Azul',talla:'32'},{color:'Azul',talla:'36'},{color:'Café',talla:'30'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',7.75,8.25,2,2),mkLog('QA',8.25,8.75,2,2),mkLog('REGISTRO',8.75,null,2,null)]}),
+
+  mkOC('OC-010','Sudadera Hoodie Oversize','Urban Trends MX',{
+    REGISTRO:[
+      mkPrepack('E010A','REGISTRO',TIENDAS.CDMX_ROM,[{color:'Negro',talla:'S'},{color:'Negro',talla:'M'},{color:'Gris',talla:'M'},{color:'Gris',talla:'L'}]),
+      mkPrepack('E010B','REGISTRO',TIENDAS.PUEBLA,[{color:'Azul',talla:'XL'},{color:'Azul',talla:'XXL'},{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',7.25,7.75,2,2),mkLog('QA',7.75,8.25,2,2),mkLog('REGISTRO',8.25,null,2,null)]}),
+
+  mkOC('OC-011','Camiseta Básica Pack','Textiles Monterrey SA',{
+    REGISTRO:[
+      mkPrepackError('E011A','REGISTRO',TIENDAS.MERIDA,[{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'},{color:'Negro',talla:'S'}]),
+      mkPrepack('E011B','REGISTRO',TIENDAS.CANCUN,[{color:'Negro',talla:'M'},{color:'Gris',talla:'L'},{color:'Gris',talla:'XL'}]),
+    ],
+  },{total_esperados:3,total_recibidos:2,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',8.0,8.5,2,2),mkLog('QA',8.5,9.0,2,2),{...mkLog('REGISTRO',9.0,null,2,null),tiene_anomalia:true}]}),
+
+  // ── SORTER ───────────────────────────────────────────────────────────────
+  mkOC('OC-012','Blusa Campesina Bordada','Moda Express MX',{
+    REGISTRO:[
+      mkPrepack('E012A','REGISTRO',TIENDAS.MTY_CENTRO,[{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'},{color:'Rosa',talla:'S'},{color:'Rosa',talla:'M'}]),
+    ],
+    SORTER:[
+      mkPrepack('E012B','SORTER',TIENDAS.SALTILLO,[{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Verde',talla:'L'},{color:'Verde',talla:'XL'}]),
+      mkPrepack('E012C','SORTER',TIENDAS.CHIHUAHUA,[{color:'Rojo',talla:'S'},{color:'Rojo',talla:'M'},{color:'Blanco',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',6.5,7.0,3,3),mkLog('QA',7.0,7.5,3,3),mkLog('REGISTRO',7.5,8.0,3,3),mkLog('SORTER',8.0,null,2,null)]}),
+
+  mkOC('OC-013','Jean Skinny Mujer','Diseños Guadalajara',{
+    SORTER:[
+      mkPrepack('E013A','SORTER',TIENDAS.GUADALAJARA,[{color:'Azul Oscuro',talla:'25'},{color:'Azul Oscuro',talla:'27'},{color:'Negro',talla:'25'},{color:'Negro',talla:'27'}]),
+      mkPrepack('E013B','SORTER',TIENDAS.ZAPOPAN,[{color:'Gris',talla:'29'},{color:'Gris',talla:'31'},{color:'Negro',talla:'29'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',6.75,7.25,2,2),mkLog('QA',7.25,7.75,2,2),mkLog('REGISTRO',7.75,8.25,2,2),mkLog('SORTER',8.25,null,2,null)]}),
+
+  mkOC('OC-014','Playera Polo Sport','ActiveWear CDMX',{
+    SORTER:[
+      mkPrepack('E014A','SORTER',TIENDAS.HERMOSILLO,[{color:'Blanco',talla:'M'},{color:'Blanco',talla:'L'},{color:'Azul',talla:'S'},{color:'Azul',talla:'M'}]),
+    ],
+    BAHIA:[
+      mkPrepack('E014B','BAHIA',TIENDAS.TIJUANA,[{color:'Negro',talla:'XL'},{color:'Negro',talla:'XXL'},{color:'Gris',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',6.25,6.75,2,2),mkLog('QA',6.75,7.25,2,2),mkLog('REGISTRO',7.25,7.75,2,2),mkLog('SORTER',7.75,null,1,null),mkLog('BAHIA',8.5,null,1,null)]}),
+
+  // ── BAHÍAS ───────────────────────────────────────────────────────────────
+  mkOC('OC-015','Shorts Playa Tropical','Estampados MX',{
+    BAHIA:[
+      mkPrepack('E015A','BAHIA',TIENDAS.MTY_CENTRO,[{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Verde',talla:'S'},{color:'Verde',talla:'M'}]),
+      mkPrepack('E015B','BAHIA',TIENDAS.GUADALAJARA,[{color:'Naranja',talla:'L'},{color:'Naranja',talla:'XL'},{color:'Rojo',talla:'M'}]),
+      mkPrepack('E015C','BAHIA',TIENDAS.CDMX_POL,[{color:'Azul',talla:'L'},{color:'Verde',talla:'XL'},{color:'Blanco',talla:'S'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',6.0,6.5,3,3),mkLog('QA',6.5,7.0,3,3),mkLog('REGISTRO',7.0,7.5,3,3),mkLog('SORTER',7.5,8.0,3,3),mkLog('BAHIA',8.0,null,3,null)]}),
+
+  mkOC('OC-016','Falda Midi Plisada','Diseños Guadalajara',{
+    SORTER:[
+      mkPrepack('E016A','SORTER',TIENDAS.CDMX_ROM,[{color:'Rosa',talla:'S'},{color:'Rosa',talla:'M'},{color:'Beige',talla:'S'}]),
+    ],
+    BAHIA:[
+      mkPrepack('E016B','BAHIA',TIENDAS.SLP,[{color:'Beige',talla:'M'},{color:'Negro',talla:'L'},{color:'Negro',talla:'XL'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',6.25,6.75,2,2),mkLog('QA',6.75,7.25,2,2),mkLog('REGISTRO',7.25,7.75,2,2),mkLog('SORTER',7.75,null,1,null),mkLog('BAHIA',8.25,null,1,null)]}),
+
+  mkOC('OC-017','Chamarra Denim Oversize','Urban Trends MX',{
+    BAHIA:[
+      mkPrepack('E017A','BAHIA',TIENDAS.MEXICALI,[{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Negro',talla:'L'},{color:'Negro',talla:'XL'}]),
+      mkPrepack('E017B','BAHIA',TIENDAS.CHIHUAHUA,[{color:'Blanco',talla:'M'},{color:'Blanco',talla:'L'},{color:'Gris',talla:'XL'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',5.75,6.25,2,2),mkLog('QA',6.25,6.75,2,2),mkLog('REGISTRO',6.75,7.25,2,2),mkLog('SORTER',7.25,7.75,2,2),mkLog('BAHIA',7.75,null,2,null)]}),
+
+  // ── AUDITORÍA ────────────────────────────────────────────────────────────
+  mkOC('OC-018','Playera Básica Premium','Textiles Monterrey SA',{
+    BAHIA:[
+      mkPrepack('E018A','BAHIA',TIENDAS.MTY_CENTRO,[{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'},{color:'Negro',talla:'L'},{color:'Negro',talla:'XL'}]),
+    ],
+    AUDITORIA:[
+      mkPrepack('E018B','AUDITORIA',TIENDAS.SAN_PEDRO,[{color:'Gris',talla:'S'},{color:'Gris',talla:'M'},{color:'Azul',talla:'S'}]),
+      mkPrepack('E018C','AUDITORIA',TIENDAS.QUERETARO,[{color:'Azul',talla:'L'},{color:'Blanco',talla:'XL'},{color:'Negro',talla:'M'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',5.0,5.5,3,3),mkLog('QA',5.5,6.0,3,3),mkLog('REGISTRO',6.0,6.5,3,3),mkLog('SORTER',6.5,7.0,3,3),mkLog('BAHIA',7.0,null,3,null),mkLog('AUDITORIA',7.75,null,2,null)]}),
+
+  mkOC('OC-019','Pantalón Vestir Slim','Confecciones del Norte',{
+    AUDITORIA:[
+      mkPrepackError('E019A','AUDITORIA',TIENDAS.GUADALAJARA,[{color:'Negro',talla:'30'},{color:'Negro',talla:'32'},{color:'Gris',talla:'30'}]),
+      mkPrepack('E019B','AUDITORIA',TIENDAS.PUEBLA,[{color:'Gris',talla:'34'},{color:'Azul',talla:'32'},{color:'Azul',talla:'36'}]),
+    ],
+  },{total_esperados:3,total_recibidos:2,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',5.25,5.75,2,2),mkLog('QA',5.75,6.25,2,2),mkLog('REGISTRO',6.25,6.75,2,2),mkLog('SORTER',6.75,7.25,2,2),mkLog('BAHIA',7.25,7.75,2,2),{...mkLog('AUDITORIA',7.75,null,2,null),tiene_anomalia:true}]}),
+
+  mkOC('OC-020','Blusa Casual Rayas','Moda Express MX',{
+    AUDITORIA:[
+      mkPrepack('E020A','AUDITORIA',TIENDAS.HERMOSILLO,[{color:'Azul',talla:'S'},{color:'Azul',talla:'M'},{color:'Rojo',talla:'S'},{color:'Rojo',talla:'M'}]),
+      mkPrepack('E020B','AUDITORIA',TIENDAS.MERIDA,[{color:'Blanco',talla:'L'},{color:'Blanco',talla:'XL'},{color:'Azul',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',5.5,6.0,2,2),mkLog('QA',6.0,6.5,2,2),mkLog('REGISTRO',6.5,7.0,2,2),mkLog('SORTER',7.0,7.5,2,2),mkLog('BAHIA',7.5,8.0,2,2),mkLog('AUDITORIA',8.0,null,2,null)]}),
+
+  mkOC('OC-021','Sudadera Crew Neck Básica','Urban Trends MX',{
+    AUDITORIA:[
+      mkPrepack('E021A','AUDITORIA',TIENDAS.MTY_CENTRO,[{color:'Gris',talla:'S'},{color:'Gris',talla:'M'},{color:'Negro',talla:'S'}]),
+    ],
+    ENVIO:[
+      mkPrepack('E021B','ENVIO',TIENDAS.GUADALAJARA,[{color:'Negro',talla:'M'},{color:'Azul',talla:'L'},{color:'Azul',talla:'XL'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',4.75,5.25,2,2),mkLog('QA',5.25,5.75,2,2),mkLog('REGISTRO',5.75,6.25,2,2),mkLog('SORTER',6.25,6.75,2,2),mkLog('BAHIA',6.75,7.25,2,2),mkLog('AUDITORIA',7.25,null,1,null),mkLog('ENVIO',7.75,null,1,null)]}),
+
+  // ── ENVÍO ────────────────────────────────────────────────────────────────
+  mkOC('OC-022','Pantalón Jogger Tech','ActiveWear CDMX',{
+    ENVIO:[
+      mkPrepack('E022A','ENVIO',TIENDAS.HERMOSILLO,[{color:'Negro',talla:'S'},{color:'Negro',talla:'M'},{color:'Gris',talla:'L'},{color:'Gris',talla:'XL'}]),
+      mkPrepack('E022B','ENVIO',TIENDAS.TIJUANA,[{color:'Azul',talla:'M'},{color:'Azul',talla:'L'},{color:'Verde',talla:'S'}]),
+      mkPrepack('E022C','ENVIO',TIENDAS.MEXICALI,[{color:'Verde',talla:'M'},{color:'Negro',talla:'XL'},{color:'Gris',talla:'M'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',4.0,4.5,3,3),mkLog('QA',4.5,5.0,3,3),mkLog('REGISTRO',5.0,5.5,3,3),mkLog('SORTER',5.5,6.0,3,3),mkLog('BAHIA',6.0,6.75,3,3),mkLog('AUDITORIA',6.75,7.25,3,3),mkLog('ENVIO',7.25,null,3,null)]}),
+
+  mkOC('OC-023','Vestido Formal Noche','Diseños Guadalajara',{
+    ENVIO:[
+      mkPrepack('E023A','ENVIO',TIENDAS.MTY_CENTRO,[{color:'Negro',talla:'S'},{color:'Negro',talla:'M'},{color:'Rojo',talla:'S'},{color:'Rojo',talla:'M'}]),
+      mkPrepack('E023B','ENVIO',TIENDAS.CDMX_POL,[{color:'Azul Marino',talla:'L'},{color:'Azul Marino',talla:'XL'},{color:'Negro',talla:'XL'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',4.25,4.75,2,2),mkLog('QA',4.75,5.25,2,2),mkLog('REGISTRO',5.25,5.75,2,2),mkLog('SORTER',5.75,6.25,2,2),mkLog('BAHIA',6.25,7.0,2,2),mkLog('AUDITORIA',7.0,7.5,2,2),mkLog('ENVIO',7.5,8.0,2,2)]}),
+
+  mkOC('OC-024','Playera Manga Larga UV','Textiles Monterrey SA',{
+    ENVIO:[
+      mkPrepack('E024A','ENVIO',TIENDAS.QUERETARO,[{color:'Blanco',talla:'S'},{color:'Blanco',talla:'M'},{color:'Azul',talla:'S'}]),
+      mkPrepackError('E024B','ENVIO',TIENDAS.AGUASC,[{color:'Azul',talla:'M'},{color:'Negro',talla:'L'},{color:'Negro',talla:'XL'}]),
+    ],
+  },{total_esperados:3,total_recibidos:2,faltantes:1,etapa_logs:[mkLog('PREREGISTRO',3.75,4.25,2,2),mkLog('QA',4.25,4.75,2,2),mkLog('REGISTRO',4.75,5.25,2,2),mkLog('SORTER',5.25,5.75,2,2),mkLog('BAHIA',5.75,6.5,2,2),mkLog('AUDITORIA',6.5,7.0,2,2),{...mkLog('ENVIO',7.0,null,2,null),tiene_anomalia:true}]}),
+
+  mkOC('OC-025','Short Gym Hombre','ActiveWear CDMX',{
+    AUDITORIA:[
+      mkPrepack('E025A','AUDITORIA',TIENDAS.MERIDA,[{color:'Negro',talla:'S'},{color:'Negro',talla:'M'},{color:'Azul',talla:'S'},{color:'Azul',talla:'M'}]),
+    ],
+    ENVIO:[
+      mkPrepack('E025B','ENVIO',TIENDAS.CANCUN,[{color:'Gris',talla:'L'},{color:'Gris',talla:'XL'},{color:'Negro',talla:'L'}]),
+    ],
+  },{etapa_logs:[mkLog('PREREGISTRO',4.5,5.0,2,2),mkLog('QA',5.0,5.5,2,2),mkLog('REGISTRO',5.5,6.0,2,2),mkLog('SORTER',6.0,6.5,2,2),mkLog('BAHIA',6.5,7.0,2,2),mkLog('AUDITORIA',7.0,null,1,null),mkLog('ENVIO',7.5,null,1,null)]}),
 ];
 
 // ─── Datos por etapa ────────────────────────────────────────────────────────

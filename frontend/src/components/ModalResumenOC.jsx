@@ -102,9 +102,17 @@ export default function ModalResumenOC({ oc, onClose }) {
                 {['Producto','Tienda','Bahía','Etapa','Estado'].map(h=><th key={h} style={{padding:'5px 10px',textAlign:'left',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.4px',borderBottom:'1px solid var(--ds-border-light)',whiteSpace:'nowrap'}}>{h}</th>)}
               </tr></thead>
               <tbody>{tags.map(tag=>{
-                const cTag=getColorCSS(tag.color),err=tag.qa_fallido;
+                const prendasTag=tag.prendas&&tag.prendas.length>0?tag.prendas:[{color:tag.color,talla:tag.talla}];
+                const colsT=[...new Set(prendasTag.map(p=>p.color))];
+                const tallsT=[...new Set(prendasTag.map(p=>p.talla))];
+                const err=tag.qa_fallido;
                 return <tr key={tag.epc} style={{borderBottom:'1px solid var(--ds-border-light)',background:err?'#FFF5F5':'transparent'}}>
-                  <td style={{padding:'4px 10px',fontWeight:600}}><div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:10,height:10,borderRadius:'50%',background:cTag,border:'1px solid rgba(0,0,0,0.1)',flexShrink:0}}/>{tag.color} {tag.talla}</div></td>
+                  <td style={{padding:'4px 10px',fontWeight:600}}>
+                    <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                      {colsT.slice(0,4).map(c=><div key={c} title={c} style={{width:10,height:10,borderRadius:'50%',background:getColorCSS(c),border:'1px solid rgba(0,0,0,0.1)',flexShrink:0}}/>)}
+                      <span style={{fontSize:10}}>{colsT.join('/')} · {tallsT.join(',')} · {prendasTag.length}p</span>
+                    </div>
+                  </td>
                   <td style={{padding:'4px 10px'}}><div style={{fontSize:11}}>{tag.tienda?.nombre||'—'}</div>{tag.tienda?.ciudad&&<div style={{fontSize:9,color:'#94A3B8'}}>{tag.tienda.ciudad}</div>}</td>
                   <td style={{padding:'4px 10px',fontSize:10,color:'var(--ds-text-muted)',whiteSpace:'nowrap'}}>{(tag.tienda?.bahia_asignada||'—').replace('BAHIA-','B-')}</td>
                   <td style={{padding:'4px 10px'}}><span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:`${ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}18`,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8',whiteSpace:'nowrap'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</span></td>

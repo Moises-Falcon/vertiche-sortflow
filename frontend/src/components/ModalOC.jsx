@@ -87,11 +87,14 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
   const tieneErr = fallidos.length>0 || etapaLogs.some(l => l.tiene_anomalia);
 
   const tagsOk = tags.filter(t => !t.qa_fallido);
-  const colores = [...new Set(tagsOk.map(t=>t.color))].sort();
-  const tallas = [...new Set(tagsOk.map(t=>t.talla))].sort((a,b)=>(ORDEN_TALLAS.indexOf(a)===-1?99:ORDEN_TALLAS.indexOf(a))-(ORDEN_TALLAS.indexOf(b)===-1?99:ORDEN_TALLAS.indexOf(b)));
-  const conteo = (c,t) => tagsOk.filter(x=>x.color===c&&x.talla===t).length;
-  const totColor = c => tagsOk.filter(x=>x.color===c).length;
-  const totTalla = t => tagsOk.filter(x=>x.talla===t).length;
+  // Agregar prendas de todos los prepacks ok (cada prepack tiene prendas[])
+  const todasPrendas = tagsOk.flatMap(t => t.prendas && t.prendas.length>0 ? t.prendas : [{color:t.color,talla:t.talla}]);
+  const colores = [...new Set(todasPrendas.map(p=>p.color))].sort();
+  const tallas = [...new Set(todasPrendas.map(p=>p.talla))].sort((a,b)=>(ORDEN_TALLAS.indexOf(a)===-1?99:ORDEN_TALLAS.indexOf(a))-(ORDEN_TALLAS.indexOf(b)===-1?99:ORDEN_TALLAS.indexOf(b)));
+  const conteo = (c,t) => todasPrendas.filter(x=>x.color===c&&x.talla===t).length;
+  const totColor = c => todasPrendas.filter(x=>x.color===c).length;
+  const totTalla = t => todasPrendas.filter(x=>x.talla===t).length;
+  const totalPrendas = todasPrendas.length;
 
   const bahiasOC = Array.from({length:10},(_,i)=>{
     const id=`BAHIA-${i+1}`; const enB=tags.filter(t=>t.tienda?.bahia_asignada===id); return {n:i+1,id,total:enB.length};
@@ -205,7 +208,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                   <tfoot><tr style={{borderTop:'2px solid var(--ds-border-light)'}}>
                     <td style={{...td,fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase'}}>Total</td>
                     {tallas.map(t=><td key={t} style={{...td,textAlign:'center',fontWeight:800,fontSize:13}}>{totTalla(t)}</td>)}
-                    <td style={{...td,textAlign:'center',fontSize:16,fontWeight:900,background:'var(--ds-primary)',color:'#fff'}}>{tagsOk.length}</td>
+                    <td style={{...td,textAlign:'center',fontSize:16,fontWeight:900,background:'var(--ds-primary)',color:'#fff'}}>{totalPrendas}</td>
                   </tr></tfoot>
                 </table>
               </div>
@@ -302,24 +305,26 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                 {['# Código','Producto','Tienda destino','Bahia','Etapa','Estado',''].map(h=><th key={h} style={{...th,textAlign:'left'}}>{h}</th>)}
               </tr></thead>
               <tbody>
-                {(()=>{const grupos={};tagsSorted.forEach(t=>{const pid=t.prepack_id||t.epc;if(!grupos[pid])grupos[pid]=[];grupos[pid].push(t);});return Object.entries(grupos);})().map(([packId,prendas])=>{
-                  const tag=prendas[0];
-                  const tieneErr=prendas.some(t=>t.qa_fallido);
-                  const tieneAnomalia=prendas.some(t=>(t.anomalias?.length||0)>0);
+                {tagsSorted.map(tag=>{
+                  const prendas=tag.prendas&&tag.prendas.length>0?tag.prendas:[{color:tag.color,talla:tag.talla}];
+                  const packId=tag.epc;
+                  const tieneErr=tag.qa_fallido;
+                  const tieneAnomalia=(tag.anomalias?.length||0)>0;
                   const isExp=expandido===packId;
                   const presente=true;
                   const entregado=['ENVIO','COMPLETADO'].includes(tag.etapa_actual);
                   const calidadOk=!tieneErr;
                   const colUnicos=[...new Set(prendas.map(p=>p.color))];
                   const tallUnicas=[...new Set(prendas.map(p=>p.talla))];
+                  const codigoCorto=packId&&packId.length>6?`···${packId.slice(-6)}`:packId;
                   return[
                     <tr key={packId} onDoubleClick={()=>setExpandido(isExp?null:packId)} style={{borderBottom:'1px solid var(--ds-border-light)',cursor:'pointer',background:tieneErr?'#FFF5F5':tieneAnomalia?'#FFFBEB':'transparent'}}>
-                      <td style={{...td,fontFamily:'monospace',fontWeight:700,color:'var(--ds-primary)',whiteSpace:'nowrap'}}>{packId.length>8?`···${packId.slice(-6)}`:packId}</td>
+                      <td style={{...td,fontFamily:'monospace',fontWeight:700,color:'var(--ds-primary)',whiteSpace:'nowrap'}}>{codigoCorto}</td>
                       <td style={{...td,fontWeight:500}}>
                         <div style={{fontWeight:600,fontSize:11,color:'var(--ds-text-primary)'}}>{colUnicos.map(c=>{const cCSS=COLORES_CSS[(c||'').toLowerCase()]||'#94A3B8';const eClC=['blanco','white','beige','amarillo'].includes((c||'').toLowerCase());return(
                           <span key={c} style={{display:'inline-flex',alignItems:'center',gap:3,marginRight:6}}><div style={{width:7,height:7,borderRadius:'50%',background:cCSS,border:eClC?'1px solid #CBD5E1':'none',flexShrink:0}}/>{c}</span>
                         );})}</div>
-                        <div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:1}}>{tallUnicas.join(', ')} · {prendas.length} pieza{prendas.length!==1?'s':''}</div>
+                        <div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:1}}>{tallUnicas.join(', ')} · {prendas.length} prenda{prendas.length!==1?'s':''}</div>
                       </td>
                       <td style={{...td,fontSize:11}}>{tag.tienda?.nombre||tag.tienda_id||'—'}{tag.tienda?.ciudad&&<div style={{fontSize:10,color:'#64748B',marginTop:1}}>{tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</div>}</td>
                       <td style={{...td,fontSize:11,color:'#94A3B8'}}>{tag.tienda?.bahia_asignada||'—'}</td>
@@ -331,15 +336,15 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                           <span style={{fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:3,background:calidadOk?'#DCFCE7':'#FEE2E2',color:calidadOk?'#14532D':'#7F1D1D',whiteSpace:'nowrap'}}>{calidadOk?'✓ QA':'✗ QA'}</span>
                         </div>
                       </td>
-                      <td style={td}><button onClick={e=>{e.stopPropagation();setPrepackModal({...tag,prendas,prepack_id:packId});}} style={{background:'none',border:'1px solid var(--ds-primary-border)',borderRadius:4,padding:'2px 8px',fontSize:9,cursor:'pointer',color:'var(--ds-primary)',fontWeight:600}}>Ver detalle</button></td>
+                      <td style={td}><button onClick={e=>{e.stopPropagation();setPrepackModal(tag);}} style={{background:'none',border:'1px solid var(--ds-primary-border)',borderRadius:4,padding:'2px 8px',fontSize:9,cursor:'pointer',color:'var(--ds-primary)',fontWeight:600}}>Ver detalle</button></td>
                     </tr>,
                     isExp&&<tr key={`${packId}-d`}><td colSpan={7} style={{padding:'16px 20px',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px',marginBottom:14,fontSize:12}}>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Contenido</span><div style={{fontWeight:600,color:'#0F172A',marginTop:2}}>{colUnicos.join(' / ')} · {tallUnicas.join(', ')}</div></div>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Tienda destino</span><div style={{fontWeight:600,color:'#0F172A',marginTop:2}}>{tag.tienda?.nombre||'—'}{tag.tienda?.ciudad&&<span style={{fontWeight:400,color:'#64748B'}}> — {tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</span>}</div></div>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Tipo de flujo</span><div style={{marginTop:2}}>{tag.tipo_flujo||'—'}</div></div>
-                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Piezas en prepack</span><div style={{fontWeight:700,fontSize:15,color:'#0F172A',marginTop:2}}>{prendas.length}</div></div>
-                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Código</span><code style={{fontSize:10,color:'#64748B',marginTop:2,display:'block'}}>{packId}</code></div>
+                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Prendas en prepack</span><div style={{fontWeight:700,fontSize:15,color:'#0F172A',marginTop:2}}>{prendas.length}</div></div>
+                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>EPC</span><code style={{fontSize:10,color:'#64748B',marginTop:2,display:'block'}}>{packId}</code></div>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Bahía asignada</span><div style={{fontWeight:600,color:'var(--ds-zona-auditoria)',marginTop:2}}>{tag.tienda?.bahia_asignada||'—'}</div></div>
                         {tag.qa_fallido&&<div style={{gridColumn:'1/-1',background:'var(--ds-rojo-bg)',borderRadius:6,padding:'8px 12px',border:'1px solid var(--ds-rojo-border)'}}><strong style={{color:'var(--ds-rojo-text)'}}>Rechazado en QA: </strong><span style={{color:'var(--ds-rojo-text)'}}>{tag.qa_motivo_fallo||'Sin motivo registrado'}</span></div>}
                       </div>
@@ -374,9 +379,13 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
       {/* MINI-MODAL DEL PREPACK */}
       {prepackModal&&(()=>{
         const tag=prepackModal;
+        const prendasMM=tag.prendas&&tag.prendas.length>0?tag.prendas:[{color:tag.color,talla:tag.talla}];
+        const colUnicosMM=[...new Set(prendasMM.map(p=>p.color))];
+        const tallUnicasMM=[...new Set(prendasMM.map(p=>p.talla))];
+        const colorPrincipal=colUnicosMM[0]||tag.color||'';
         const COLMAP={azul:'#3B82F6',rojo:'#EF4444',verde:'#22C55E',negro:'#1E293B',blanco:'#F8FAFC',amarillo:'#EAB308',rosa:'#EC4899',gris:'#94A3B8','café':'#92400E',cafe:'#92400E',naranja:'#F97316',morado:'#8B5CF6',beige:'#D4B896','azul oscuro':'#1E3A8A','azul marino':'#1E3A8A'};
-        const cCSS=COLMAP[(tag.color||'').toLowerCase()]||'#94A3B8';
-        const esC=['blanco','white','beige','amarillo','yellow'].includes((tag.color||'').toLowerCase());
+        const cCSS=COLMAP[(colorPrincipal||'').toLowerCase()]||'#94A3B8';
+        const esC=['blanco','white','beige','amarillo','yellow'].includes((colorPrincipal||'').toLowerCase());
         const txtC=esC?'#1E293B':'#FFFFFF';
         return(
           <div onClick={()=>setPrepackModal(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
@@ -390,20 +399,28 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                     <div style={{fontSize:13,fontWeight:800,fontFamily:'monospace',color:'var(--ds-primary)',background:'var(--ds-primary-light)',border:'1px solid var(--ds-primary-border)',borderRadius:6,padding:'2px 10px'}}>{getCodigo(tag)}</div>
                     <div style={{fontSize:9,color:'var(--ds-text-disabled)'}}>código del prepack</div>
                   </div>
-                  <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1,marginBottom:2}}>{tag.prendas&&tag.prendas.length>0?`${tag.prendas.length} prendas — ${[...new Set(tag.prendas.map(p=>p.color))].join('/')}`:`${tag.color} ${tag.talla} × ${tag.cantidad_piezas||1} pzs`}</div>
+                  <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1,marginBottom:2}}>{prendasMM.length} prenda{prendasMM.length!==1?'s':''} — {colUnicosMM.join(' / ')}</div>
                   <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual} · {tag.tienda?.nombre||'—'}</div>
                 </div>
                 <button onClick={()=>setPrepackModal(null)} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:30,height:30,cursor:'pointer',fontSize:16,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
               </div>
               <div style={{padding:'16px 20px'}}>
                 <div style={{display:'flex',gap:12,marginBottom:16}}>
-                  <div style={{width:80,height:80,borderRadius:10,flexShrink:0,background:cCSS,border:esC?'2px solid #E2E8F0':'none',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 10px rgba(0,0,0,0.12)'}}>
-                    <span style={{fontSize:11,fontWeight:700,color:txtC,textAlign:'center',lineHeight:1.2}}>{tag.color}</span>
-                  </div>
+                  {colUnicosMM.length>1?(
+                    <div style={{width:80,height:80,borderRadius:10,flexShrink:0,background:'#F8FAFC',border:'1px solid var(--ds-border-light)',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'center',gap:4,padding:8,boxShadow:'0 2px 10px rgba(0,0,0,0.08)'}}>
+                      {colUnicosMM.slice(0,4).map(c=>{const cc=COLMAP[(c||'').toLowerCase()]||'#94A3B8';const ec=['blanco','white','beige','amarillo'].includes((c||'').toLowerCase());return(
+                        <div key={c} title={c} style={{width:26,height:26,borderRadius:'50%',background:cc,border:ec?'1.5px solid #CBD5E1':'1.5px solid rgba(0,0,0,0.1)',flexShrink:0}}/>
+                      );})}
+                    </div>
+                  ):(
+                    <div style={{width:80,height:80,borderRadius:10,flexShrink:0,background:cCSS,border:esC?'2px solid #E2E8F0':'none',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 10px rgba(0,0,0,0.12)'}}>
+                      <span style={{fontSize:11,fontWeight:700,color:txtC,textAlign:'center',lineHeight:1.2}}>{colorPrincipal}</span>
+                    </div>
+                  )}
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'6px 16px',flex:1}}>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Color</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{tag.color}</div></div>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Talla</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{tag.talla}</div></div>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Piezas</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{tag.cantidad_piezas||'—'}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Colores</div><div style={{fontSize:12,fontWeight:700,color:'var(--ds-text-primary)'}}>{colUnicosMM.join(' / ')}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Tallas</div><div style={{fontSize:12,fontWeight:700,color:'var(--ds-text-primary)'}}>{tallUnicasMM.join(', ')}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Prendas</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{prendasMM.length}</div></div>
                     <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Tipo flujo</div><div style={{fontSize:11,color:'var(--ds-text-secondary)'}}>{tag.tipo_flujo||'—'}</div></div>
                   </div>
                 </div>
