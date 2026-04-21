@@ -90,11 +90,6 @@ html, body, #root {
 
 body, html, #root { transition: background .2s, color .2s; }
 
-/* Modo oscuro: texto más brillante */
-:root {
-  --text: #FFFFFF;
-}
-
 /* Override de botones/elementos con colores azul-marino hardcoded */
 [data-theme="light"] button[style*="#1a3a6e"],
 [data-theme="light"] button[style*="1e3a6e"],
