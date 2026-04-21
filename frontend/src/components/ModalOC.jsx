@@ -6,6 +6,25 @@ const ETAPA_LABELS = { PREREGISTRO:'Pre-registro', QA:'QA', REGISTRO:'Registro',
 const ETAPA_COLORS = { PREREGISTRO:'#2563EB', QA:'#059669', REGISTRO:'#D97706', SORTER:'#7C3AED', BAHIA:'#0891B2', AUDITORIA:'#DB2777', ENVIO:'#16A34A' };
 const ORDEN_TALLAS = ['XS','S','CH','M','G','L','XL','XXL'];
 
+const COLORES_CSS = { azul:'#3B82F6', rojo:'#EF4444', verde:'#22C55E', negro:'#1E293B', blanco:'#F8FAFC', amarillo:'#EAB308', rosa:'#EC4899', gris:'#94A3B8', 'café':'#92400E', cafe:'#92400E', naranja:'#F97316', morado:'#8B5CF6', violeta:'#8B5CF6', beige:'#D4B896', 'azul oscuro':'#1E3A8A', 'azul marino':'#1E3A8A' };
+
+function getCodigo(tag) {
+  const f = tag?.numero_folio || tag?.folio || tag?.num_prepack;
+  if (f) return `#${f}`;
+  const e = tag?.epc || '';
+  return e.length > 6 ? `···${e.slice(-6)}` : e;
+}
+
+function buildTablaPrepack(tag) {
+  if (tag?.prendas && tag.prendas.length > 0) {
+    const colores = [...new Set(tag.prendas.map(p => p.color))].sort();
+    const tallas = [...new Set(tag.prendas.map(p => p.talla))].sort((a,b)=>{const ia=ORDEN_TALLAS.indexOf(a),ib=ORDEN_TALLAS.indexOf(b);return (ia===-1?99:ia)-(ib===-1?99:ib);});
+    return { colores, tallas, conteo:(c,t)=>tag.prendas.filter(p=>p.color===c&&p.talla===t).length, totColor:c=>tag.prendas.filter(p=>p.color===c).length, totTalla:t=>tag.prendas.filter(p=>p.talla===t).length, gran:tag.prendas.length };
+  }
+  const piezas = tag?.cantidad_piezas || 1;
+  return { colores:[tag?.color||'—'], tallas:[tag?.talla||'—'], conteo:(c,t)=>(c===tag?.color&&t===tag?.talla)?piezas:0, totColor:c=>c===tag?.color?piezas:0, totTalla:t=>t===tag?.talla?piezas:0, gran:piezas };
+}
+
 function formatHora(ts) { return ts ? new Date(ts).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false}) : '—'; }
 function formatDur(min) { return min ? (min>=60?`${Math.floor(min/60)}h ${min%60}min`:`${min}min`) : '—'; }
 function Barra({ pct, color='#6366F1', height=5 }) {
@@ -280,7 +299,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
             </div>
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
               <thead><tr style={{background:'#F8FAFC'}}>
-                {['Producto','Tienda destino','Bahia','Etapa','Estado',''].map(h=><th key={h} style={{...th,textAlign:'left'}}>{h}</th>)}
+                {['# Código','Producto','Tienda destino','Bahia','Etapa','Estado',''].map(h=><th key={h} style={{...th,textAlign:'left'}}>{h}</th>)}
               </tr></thead>
               <tbody>
                 {tagsSorted.map(tag=>{
@@ -288,7 +307,14 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                   const isExp=expandido===tag.epc;
                   return[
                     <tr key={tag.epc} onDoubleClick={()=>setExpandido(isExp?null:tag.epc)} style={{borderBottom:'1px solid var(--ds-border-light)',cursor:'pointer',background:tag.qa_fallido?'#FFF5F5':tieneAnomalia?'#FFFBEB':'transparent'}}>
-                      <td style={{...td,fontWeight:500}}>{tag.color} {tag.talla}</td>
+                      <td style={{...td,fontFamily:'monospace',fontWeight:700,color:'var(--ds-text-primary)',whiteSpace:'nowrap'}}>{getCodigo(tag)}</td>
+                      <td style={{...td,fontWeight:500}}>
+                        {tag.prendas&&tag.prendas.length>0?(()=>{const cu=[...new Set(tag.prendas.map(p=>p.color))];const tu=[...new Set(tag.prendas.map(p=>p.talla))];return(
+                          <div><div style={{fontWeight:600,fontSize:11,color:'var(--ds-text-primary)'}}>{cu.join(' / ')}</div><div style={{fontSize:9,color:'var(--ds-text-muted)'}}>{tu.join(', ')} · {tag.prendas.length} prendas</div></div>
+                        );})():(
+                          <div><div style={{fontWeight:600,fontSize:11,color:'var(--ds-text-primary)',display:'flex',alignItems:'center',gap:6}}><div style={{width:8,height:8,borderRadius:'50%',background:COLORES_CSS[(tag.color||'').toLowerCase()]||'#94A3B8',border:'1px solid rgba(0,0,0,0.1)',flexShrink:0}}/>{tag.color} {tag.talla}</div><div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:1}}>× {tag.cantidad_piezas||1} piezas</div></div>
+                        )}
+                      </td>
                       <td style={{...td,fontSize:11}}>{tag.tienda?.nombre||tag.tienda_id||'—'}{tag.tienda?.ciudad&&<div style={{fontSize:10,color:'#64748B',marginTop:1}}>{tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</div>}</td>
                       <td style={{...td,fontSize:11,color:'#94A3B8'}}>{tag.tienda?.bahia_asignada||'—'}</td>
                       <td style={td}><span style={{fontSize:10,fontWeight:600,padding:'2px 7px',borderRadius:4,background:`${ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}18`,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</span></td>
@@ -300,7 +326,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                         </div>);})()}</td>
                       <td style={td}><button onClick={e=>{e.stopPropagation();setPrepackModal(tag);}} style={{background:'none',border:'1px solid var(--ds-primary-border)',borderRadius:4,padding:'2px 8px',fontSize:9,cursor:'pointer',color:'var(--ds-primary)',fontWeight:600}}>Ver detalle</button></td>
                     </tr>,
-                    isExp&&<tr key={`${tag.epc}-d`}><td colSpan={6} style={{padding:'16px 20px',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>
+                    isExp&&<tr key={`${tag.epc}-d`}><td colSpan={7} style={{padding:'16px 20px',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px',marginBottom:14,fontSize:12}}>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Producto</span><div style={{fontWeight:600,color:'#0F172A',marginTop:2}}>{tag.color} {tag.talla}</div></div>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Tienda destino</span><div style={{fontWeight:600,color:'#0F172A',marginTop:2}}>{tag.tienda?.nombre||'—'}{tag.tienda?.ciudad&&<span style={{fontWeight:400,color:'#64748B'}}> — {tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</span>}</div></div>
@@ -353,9 +379,12 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                   <svg viewBox="0 0 32 32" width={36} height={36} fill="none"><path d="M10 4L5 10L9 12L9 26L23 26L23 12L27 10L22 4C21 6 18.5 7.5 16 7.5C13.5 7.5 11 6 10 4Z" fill={esC?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.25)'} stroke={esC?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.5)'} strokeWidth={1}/></svg>
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>Detalle del prepack</div>
-                  <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1,marginBottom:2}}>{tag.color} — Talla {tag.talla}</div>
-                  <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>{tag.cantidad_piezas||'—'} piezas · {ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual} · {tag.tienda?.nombre||'—'}</div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                    <div style={{fontSize:13,fontWeight:800,fontFamily:'monospace',color:'var(--ds-primary)',background:'var(--ds-primary-light)',border:'1px solid var(--ds-primary-border)',borderRadius:6,padding:'2px 10px'}}>{getCodigo(tag)}</div>
+                    <div style={{fontSize:9,color:'var(--ds-text-disabled)'}}>código del prepack</div>
+                  </div>
+                  <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1,marginBottom:2}}>{tag.prendas&&tag.prendas.length>0?`${tag.prendas.length} prendas — ${[...new Set(tag.prendas.map(p=>p.color))].join('/')}`:`${tag.color} ${tag.talla} × ${tag.cantidad_piezas||1} pzs`}</div>
+                  <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual} · {tag.tienda?.nombre||'—'}</div>
                 </div>
                 <button onClick={()=>setPrepackModal(null)} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:30,height:30,cursor:'pointer',fontSize:16,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
               </div>
@@ -371,6 +400,35 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                     <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Tipo flujo</div><div style={{fontSize:11,color:'var(--ds-text-secondary)'}}>{tag.tipo_flujo||'—'}</div></div>
                   </div>
                 </div>
+                {/* Tabla color × talla del prepack */}
+                {(()=>{const{colores,tallas,conteo,totColor,totTalla,gran}=buildTablaPrepack(tag);return(
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Contenido de este prepack</div>
+                    <div style={{borderRadius:8,border:'1px solid var(--ds-border-light)',overflow:'hidden'}}>
+                      <table style={{borderCollapse:'collapse',width:'100%',fontSize:11}}>
+                        <thead><tr style={{background:'#F8FAFC'}}>
+                          <th style={{padding:'5px 10px',textAlign:'left',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',borderBottom:'1px solid var(--ds-border-light)'}}>Color</th>
+                          {tallas.map(t=><th key={t} style={{padding:'5px 10px',textAlign:'center',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',borderBottom:'1px solid var(--ds-border-light)'}}>{t}</th>)}
+                          <th style={{padding:'5px 10px',textAlign:'center',fontSize:8,fontWeight:700,color:'var(--ds-primary-dark)',textTransform:'uppercase',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>Total</th>
+                        </tr></thead>
+                        <tbody>
+                          {colores.map((color,idx)=>{const cCol=COLORES_CSS[(color||'').toLowerCase()]||'#94A3B8';const eClC=['blanco','white','beige','amarillo'].includes((color||'').toLowerCase());return(
+                            <tr key={color} style={{background:idx%2===0?'transparent':'#F8FAFC'}}>
+                              <td style={{padding:'6px 10px',fontWeight:600}}><div style={{display:'flex',alignItems:'center',gap:8}}><div style={{width:12,height:12,borderRadius:'50%',background:cCol,border:eClC?'1px solid #CBD5E1':'none',flexShrink:0}}/>{color}</div></td>
+                              {tallas.map(t=>{const n=conteo(color,t);return<td key={t} style={{padding:'6px 10px',textAlign:'center',fontWeight:n>0?700:400,color:n>0?'var(--ds-text-primary)':'#CBD5E1'}}>{n>0?n:'—'}</td>;})}
+                              <td style={{padding:'6px 10px',textAlign:'center',fontWeight:700,color:'var(--ds-primary-dark)',background:'var(--ds-primary-light)'}}>{totColor(color)}</td>
+                            </tr>
+                          );})}
+                        </tbody>
+                        <tfoot><tr style={{borderTop:'2px solid var(--ds-border-light)'}}>
+                          <td style={{padding:'6px 10px',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase'}}>Total</td>
+                          {tallas.map(t=><td key={t} style={{padding:'6px 10px',textAlign:'center',fontWeight:800,fontSize:12}}>{totTalla(t)}</td>)}
+                          <td style={{padding:'6px 10px',textAlign:'center',fontSize:15,fontWeight:900,color:'#fff',background:'var(--ds-primary)'}}>{gran}</td>
+                        </tr></tfoot>
+                      </table>
+                    </div>
+                  </div>
+                );})()}
                 <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Tienda destino</div>
                   <div style={{background:'var(--ds-bg-surface-2)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-border-light)',display:'flex',gap:16,alignItems:'center'}}>
                     <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:'var(--ds-text-primary)'}}>{tag.tienda?.nombre||'—'}</div>{(tag.tienda?.ciudad||tag.tienda?.estado)&&<div style={{fontSize:10,color:'var(--ds-text-muted)',marginTop:2}}>{[tag.tienda?.ciudad,tag.tienda?.estado].filter(Boolean).join(', ')}</div>}</div>
