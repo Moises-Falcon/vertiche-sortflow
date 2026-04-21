@@ -1,12 +1,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:       #0a0a0a;
-  --bg1:      #111111;
-  --bg2:      #181818;
-  --bg3:      #202020;
-  --border:   #282828;
-  --border2:  #333333;
+  --bg:       #0F0F13;
+  --bg1:      #171721;
+  --bg2:      #1E1E2A;
+  --bg3:      #252536;
+  --border:   #2A2A3A;
+  --border2:  #3A3A4A;
   --text:     #e8e8e8;
   --text2:    #888888;
   --text3:    #555555;
@@ -54,4 +54,63 @@ html, body, #root {
   0%,100% { transform: translateX(0); }
   25%      { transform: translateX(-8px); }
   75%      { transform: translateX(8px); }
+}
+
+/* ─────────────────────────────────────────────────────────
+   TEMA CLARO — override de tokens
+   ───────────────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --bg:       #E9EEF4;
+  --bg1:      #FFFFFF;
+  --bg2:      #F5F7FA;
+  --bg3:      #EDF0F5;
+  --border:   #CBD5E1;
+  --border2:  #94A3B8;
+  --text:     #0F172A;
+  --text2:    #334155;
+  --text3:    #64748B;
+  --gold:     #D97706;
+
+  --green:    #16A34A; --green-bg: #F0FDF4; --green-t: #166534;
+  --amber:    #D97706; --amber-bg: #FFFBEB; --amber-t: #92400E;
+  --red:      #DC2626; --red-bg:   #FEF2F2; --red-t:   #991B1B;
+  --blue:     #4F46E5; --blue-bg:  #EEF2FF; --blue-t:  #3730A3;
+}
+
+[data-theme="light"] nav,
+[data-theme="light"] [class*="card"],
+[data-theme="light"] > div > div > div {
+  box-shadow: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+}
+
+html, body, #root { transition: background .2s, color .2s; }
+
+/* Texto primario más brillante en dark */
+:root:not([data-theme="light"]) {
+  --text: #FFFFFF;
+  --text2: #D8D8E8;
+}
+
+/* Override de botones hardcoded azul marino → indigo primario */
+[data-theme="light"] [style*="background: #1a3a6e"],
+[data-theme="light"] [style*="background:#1a3a6e"],
+[data-theme="light"] [style*="background: #1a7a4a"],
+[data-theme="light"] [style*="background:#1a7a4a"] {
+  background: #4F46E5 !important;
+}
+[data-theme="light"] [style*="background: #1a3a14"],
+[data-theme="light"] [style*="background:#1a3a14"] {
+  background: #DCFCE7 !important;
+}
+[data-theme="light"] [style*="background: #2a0a0a"],
+[data-theme="light"] [style*="background:#2a0a0a"] {
+  background: #FEE2E2 !important;
+}
+[data-theme="light"] [style*="background: #0d0a20"],
+[data-theme="light"] [style*="background:#0d0a20"] {
+  background: #EEF2FF !important;
+}
+[data-theme="light"] [style*="color:#fff"] {
+  color: #FFFFFF !important;
 }

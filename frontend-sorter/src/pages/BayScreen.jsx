@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { socket } from '../socket/socketClient'
 import { DEMO_PREPACKS, BAY_COLORS } from '../data/demoData'
 import PrepackDetailPanel from '../components/PrepackDetailPanel'
+import ThemeToggle from '../theme/ThemeToggle'
 
 export default function BayScreen() {
   const { id }     = useParams()
@@ -73,9 +74,20 @@ export default function BayScreen() {
     }}>
 
       <header style={{
-        display:'flex', alignItems:'center', padding:'12px 20px',
+        display:'flex', alignItems:'center', padding:'0 20px', height:56, gap:16,
         borderBottom:'1px solid var(--border)',
       }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0, marginRight:8 }}>
+          <div style={{
+            width:32, height:32, borderRadius:8, background:'#4F46E5',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:15, fontWeight:700, color:'#fff', fontFamily:'var(--mono)',
+          }}>V</div>
+          <div>
+            <div style={{ color:'var(--text)', fontSize:13, fontWeight:600, lineHeight:1.1, letterSpacing:'.02em' }}>VERTICHE</div>
+            <div style={{ color:'var(--muted)', fontSize:10, lineHeight:1.4, letterSpacing:'.1em', textTransform:'uppercase' }}>SortFlow · Bahía</div>
+          </div>
+        </div>
         <div style={{ display:'flex', alignItems:'center', gap:12, flex:1 }}>
           <div style={{
             width:34, height:34, borderRadius:'50%',
@@ -90,9 +102,10 @@ export default function BayScreen() {
             Bahía {bayId} — {prepacksDeBahia.length} prepacks
           </span>
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <div style={{ width:6, height:6, borderRadius:'50%', background:'#4caf50', animation:'blink 1.5s ease-in-out infinite' }} />
           <span style={{ fontFamily:'var(--mono)', fontSize:9, color:'#4caf50' }}>En vivo</span>
+          <ThemeToggle size={28} />
         </div>
       </header>
 

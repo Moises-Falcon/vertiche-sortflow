@@ -7,15 +7,15 @@ export default function TopCards({ onOpenDrawer }) {
 
   return (
     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:12 }}>
-      <div style={{ background:'#ffffff', border:'1px solid #dde3dd', borderRadius:4, padding:'16px 20px' }}>
-        <div style={{ fontSize:10, letterSpacing:'.1em', color:'#8aa090', fontWeight:500, marginBottom:4, textTransform:'uppercase' }}>
+      <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:4, padding:'16px 20px' }}>
+        <div style={{ fontSize:10, letterSpacing:'.1em', color:'var(--text-muted)', fontWeight:500, marginBottom:4, textTransform:'uppercase' }}>
           CUMPLIMIENTO DEL DÍA
         </div>
         <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:10 }}>
           <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:50, fontWeight:700, color:'#1a9060', lineHeight:1 }}>
             {DIA.cumplimiento}%
           </div>
-          <div style={{ fontSize:12, color:'#6a8070' }}>
+          <div style={{ fontSize:12, color:'var(--text-2)' }}>
             {DIA.procesados.toLocaleString()} / {DIA.meta.toLocaleString()} prepacks
           </div>
         </div>
@@ -24,11 +24,11 @@ export default function TopCards({ onOpenDrawer }) {
         </div>
       </div>
 
-      <div onClick={onOpenDrawer} style={{ background:'#ffffff', border:'1px solid #dde3dd', borderRadius:4, padding:'16px 20px', cursor:'pointer' }}
-        onMouseEnter={e => e.currentTarget.style.background = '#f5f8f5'}
-        onMouseLeave={e => e.currentTarget.style.background = '#ffffff'}
+      <div onClick={onOpenDrawer} style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:4, padding:'16px 20px', cursor:'pointer' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card-2)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
       >
-        <div style={{ fontSize:10, letterSpacing:'.1em', color:'#8aa090', fontWeight:500, marginBottom:4, textTransform:'uppercase' }}>
+        <div style={{ fontSize:10, letterSpacing:'.1em', color:'var(--text-muted)', fontWeight:500, marginBottom:4, textTransform:'uppercase' }}>
           ESTADO OPERATIVO
         </div>
         <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginTop:4 }}>

@@ -1,16 +1,16 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:         #0f0f13;
-  --bg1:        #13131a;
-  --bg2:        #1a1a24;
-  --border:     #2a2a40;
-  --accent:     #f5c518;
-  --accent2:    #ff6b35;
-  --text:       #e8e8f0;
-  --muted:      #666680;
-  --card-bg:    #1a1a24;
-  --card-border:#2a2a3a;
+  --bg:         #0F0F13;
+  --bg1:        #171721;
+  --bg2:        #1E1E2A;
+  --border:     #2A2A3A;
+  --accent:     #F5C518;
+  --accent2:    #D97706;
+  --text:       #FFFFFF;
+  --muted:      #94A3B8;
+  --card-bg:    #171721;
+  --card-border:#2A2A3A;
 
   --bay-1: #3b82f6;
   --bay-2: #8b5cf6;
@@ -20,8 +20,8 @@
   --red:   #ef4444;
   --amber: #f59e0b;
 
-  --font: 'Syne', sans-serif;
-  --mono: 'Space Mono', monospace;
+  --font: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', 'Consolas', monospace;
 }
 
 html, body, #root {
@@ -31,6 +31,10 @@ html, body, #root {
   font-family: var(--font);
   overflow: hidden;
 }
+
+/* Unificación tipográfica — fuerza IBM Plex en componentes con fuentes distintas */
+[style*="Syne"],
+[style*="Space Mono"] { font-family: 'IBM Plex Sans', 'IBM Plex Mono', system-ui, sans-serif !important; }
 
 @keyframes pulse {
   0%,100% { transform: translate(-50%,-50%) scale(1); opacity:.6; }
@@ -56,4 +60,53 @@ html, body, #root {
   0%   { transform: scale(0.85); }
   60%  { transform: scale(1.08); }
   100% { transform: scale(1); }
+}
+
+/* ─────────────────────────────────────────────────────────
+   TEMA CLARO — override de tokens del sorter
+   ───────────────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --bg:         #E9EEF4;
+  --bg1:        #FFFFFF;
+  --bg2:        #F5F7FA;
+  --border:     #CBD5E1;
+  --accent:     #D97706;
+  --accent2:    #F97316;
+  --text:       #0F172A;
+  --muted:      #64748B;
+  --card-bg:    #FFFFFF;
+  --card-border:#CBD5E1;
+
+  --green: #16A34A;
+  --red:   #DC2626;
+  --amber: #D97706;
+}
+
+[data-theme="light"] aside,
+[data-theme="light"] header {
+  box-shadow: 0 1px 3px rgba(15,23,42,.06);
+}
+
+body, html, #root { transition: background .2s, color .2s; }
+
+/* Modo oscuro: texto más brillante */
+:root {
+  --text: #FFFFFF;
+}
+
+/* Override de botones/elementos con colores azul-marino hardcoded */
+[data-theme="light"] button[style*="#1a3a6e"],
+[data-theme="light"] button[style*="1e3a6e"],
+[data-theme="light"] [style*="background: #1a3a6e"],
+[data-theme="light"] [style*="background:#1a3a6e"],
+[data-theme="light"] [style*="background: #1e3a6e"],
+[data-theme="light"] [style*="background:#1e3a6e"] {
+  background: #4F46E5 !important;
+  color: #FFFFFF !important;
+  border-color: #4F46E5 !important;
+}
+[data-theme="light"] [style*="#0f1a2e"] {
+  background: #EEF2FF !important;
+  border-color: #C7D2FE !important;
 }

@@ -4,6 +4,7 @@ import { DEMO_PREPACKS, BAY_COLORS } from '../data/demoData'
 import ScanHistory      from '../components/ScanHistory'
 import PrepackDetailBar from '../components/PrepackDetailBar'
 import { IconAntenna, IconScan, IconBolt, IconSigma, IconWarning, IconArrow } from '../components/Icons'
+import ThemeToggle from '../theme/ThemeToggle'
 
 export default function SorterScreen() {
   const [current,      setCurrent]      = useState(null)
@@ -87,16 +88,21 @@ export default function SorterScreen() {
 
       {/* HEADER */}
       <header style={{
-        display:'flex', alignItems:'center', padding:'12px 24px',
+        display:'flex', alignItems:'center', padding:'0 24px', height:56,
         borderBottom:'1px solid var(--border)', position:'relative',
       }}>
-        <span style={{
-          fontFamily:'var(--mono)', fontSize:11, letterSpacing:4,
-          color:'var(--muted)', textTransform:'uppercase',
-          flex:1, textAlign:'center',
-        }}>
-          Vertiche SortFlow — Sorter
-        </span>
+        <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0 }}>
+          <div style={{
+            width:32, height:32, borderRadius:8, background:'#4F46E5',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:15, fontWeight:700, color:'#fff', fontFamily:'var(--mono)',
+          }}>V</div>
+          <div>
+            <div style={{ color:'var(--text)', fontSize:13, fontWeight:600, lineHeight:1.1, letterSpacing:'.02em' }}>VERTICHE</div>
+            <div style={{ color:'var(--muted)', fontSize:10, lineHeight:1.4, letterSpacing:'.1em', textTransform:'uppercase' }}>SortFlow · Sorter</div>
+          </div>
+        </div>
+        <div style={{ flex:1 }} />
 
         <div style={{ position:'absolute', right:24, display:'flex', gap:18, alignItems:'center' }}>
           <div style={{ textAlign:'right', display:'flex', alignItems:'center', gap:6 }}>
@@ -117,6 +123,7 @@ export default function SorterScreen() {
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#4caf50', animation:'blink 1.5s ease-in-out infinite' }} />
             <span style={{ fontFamily:'var(--mono)', fontSize:9, color:'#4caf50' }}>Activo</span>
           </div>
+          <ThemeToggle size={28} />
         </div>
       </header>
 
@@ -136,10 +143,10 @@ export default function SorterScreen() {
             }}>
               <div style={{
                 width:90, height:90, borderRadius:'50%',
-                background:'#0f1a2e', border:'1px solid #2a3a5a',
+                background:'var(--bg2)', border:'1px solid var(--border)',
                 display:'flex', alignItems:'center', justifyContent:'center',
               }}>
-                <IconAntenna size={40} color="#6eaaee" />
+                <IconAntenna size={40} color="#4F46E5" />
               </div>
               <p style={{ color:'var(--muted)', fontSize:14, fontFamily:'var(--mono)' }}>Esperando escaneo</p>
               <p style={{ color:'var(--muted)', fontSize:11 }}>Acerque la etiqueta RFID al lector</p>
@@ -317,10 +324,10 @@ export default function SorterScreen() {
             style={{
               position:'absolute', bottom:22, left:'50%',
               transform:'translateX(-50%)',
-              background: scanning ? '#1a1a2e' : '#1e3a6e',
-              border:`2px solid ${scanning ? '#2a2a4e' : '#3b82f6'}`,
+              background: scanning ? 'var(--bg2)' : '#4F46E5',
+              border:`2px solid ${scanning ? 'var(--border)' : '#4F46E5'}`,
               borderRadius:14, padding:'14px 32px',
-              color: scanning ? 'var(--muted)' : '#6eaaee',
+              color: scanning ? 'var(--muted)' : '#fff',
               fontFamily:'var(--mono)', fontSize:12, fontWeight:700,
               cursor: scanning ? 'not-allowed' : 'pointer',
               letterSpacing:2.5, textTransform:'uppercase',
@@ -329,7 +336,7 @@ export default function SorterScreen() {
               display:'flex', alignItems:'center', gap:10,
             }}
           >
-            <IconScan size={17} color={scanning ? '#666680' : '#6eaaee'} />
+            <IconScan size={17} color={scanning ? '#666680' : '#fff'} />
             {scanning ? 'Escaneando...' : 'Escaneo RFID'}
           </button>
         </div>

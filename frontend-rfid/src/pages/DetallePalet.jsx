@@ -129,10 +129,10 @@ function TablaColorTalla({ tags }) {
             return <tr key={color} style={{ borderBottom:'1px solid var(--color-border)' }}>
               <td style={{ padding:'8px 12px', fontWeight:500 }}>{color}</td>
               {tallas.map(t=>{const v=matriz[color][t]||0; return <td key={t} style={{ padding:'8px 12px', textAlign:'center', color:v===0?'var(--color-text-muted)':'var(--color-text-primary)', fontWeight:v>0?600:400, background:v>0&&v>=maxVal*0.75?'#f0fdf4':'transparent' }}>{v||'—'}</td>;})}
-              <td style={{ padding:'8px 12px', textAlign:'center', fontWeight:700, background:'#F8F9FA' }}>{total}</td>
+              <td style={{ padding:'8px 12px', textAlign:'center', fontWeight:700, background:'var(--ds-bg-surface-2)' }}>{total}</td>
             </tr>;
           })}
-          <tr style={{ background:'#F8F9FA' }}>
+          <tr style={{ background:'var(--ds-bg-surface-2)' }}>
             <td style={{ padding:'8px 12px', fontWeight:700 }}>TOTAL</td>
             {tallas.map(t=>{const tot=colores.reduce((s,c)=>s+(matriz[c][t]||0),0); return <td key={t} style={{ padding:'8px 12px', textAlign:'center', fontWeight:700 }}>{tot}</td>;})}
             <td style={{ padding:'8px 12px', textAlign:'center', fontWeight:700, fontSize:15, color:'var(--color-primary)' }}>{tagsOk.length}</td>
@@ -199,7 +199,7 @@ function PrepackDetalle({ tag, onRefresh }) {
   useEffect(()=>{ api.getTrazabilidad(tag.epc).then(setTrazabilidad).catch(()=>{}); },[tag.epc]);
 
   return (
-    <tr><td colSpan={7} style={{ padding:'12px 16px', background:'#F8F9FA', borderBottom:'2px solid var(--color-primary)' }}>
+    <tr><td colSpan={7} style={{ padding:'12px 16px', background:'var(--ds-bg-surface-2)', borderBottom:'2px solid var(--color-primary)' }}>
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, fontSize:12, marginBottom:8 }}>
         <div><span style={{ color:'var(--color-text-muted)', fontSize:10 }}>EPC completo:</span><br/><span style={{ fontFamily:'var(--font-mono)', fontSize:11 }}>{tag.epc}</span></div>
         <div><span style={{ color:'var(--color-text-muted)', fontSize:10 }}>Producto:</span><br/><strong>{tag.color} {tag.talla} · {tag.cantidad_piezas} piezas</strong></div>

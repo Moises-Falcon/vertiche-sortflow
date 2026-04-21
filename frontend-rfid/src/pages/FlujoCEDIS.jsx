@@ -428,10 +428,10 @@ function BarraKPI({ kpi, pausado, onTogglePausa, modoDemo, onToggleDemo }) {
     verde:    { bg:'var(--ds-verde-bg)',    border:'var(--ds-verde-border)',    text:'var(--ds-verde-text)' },
     amarillo: { bg:'var(--ds-amarillo-bg)', border:'var(--ds-amarillo-border)', text:'var(--ds-amarillo-text)' },
     rojo:     { bg:'var(--ds-rojo-bg)',     border:'var(--ds-rojo-border)',     text:'var(--ds-rojo-text)' },
-    gris:     { bg:'#F8FAFC', border:'var(--ds-border-light)', text:'#94A3B8' },
+    gris:     { bg:'var(--ds-bg-surface-2)', border:'var(--ds-border-light)', text:'var(--ds-text-disabled)' },
   }[semM];
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:0, background:'#fff', border:'1px solid var(--ds-border-light)', borderRadius:12, padding:'0 20px', height:62, marginBottom:16, overflowX:'auto', boxShadow:'var(--ds-shadow-sm)', flexShrink:0 }}>
+    <div style={{ display:'flex', alignItems:'center', gap:0, background:'var(--ds-bg-surface)', border:'1px solid var(--ds-border-light)', borderRadius:12, padding:'0 20px', height:62, marginBottom:16, overflowX:'auto', boxShadow:'var(--ds-shadow-sm)', flexShrink:0 }}>
       <div style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 16px', borderRadius:10, marginRight:20, flexShrink:0, background:kc.bg, border:`1.5px solid ${kc.border}` }}>
         <Dot estado={semM} size={14} />
         <div>

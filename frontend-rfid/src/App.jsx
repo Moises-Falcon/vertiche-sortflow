@@ -7,6 +7,7 @@ import Pedidos      from './pages/Pedidos';
 import ModalOC      from './components/ModalOC';
 import ModalPalet      from './components/ModalPalet';
 import ModalResumenOC  from './components/ModalResumenOC';
+import ThemeToggle  from './theme/ThemeToggle';
 
 const TABS = [
   { id: 'flujo',        label: 'Flujo CEDIS'     },
@@ -38,12 +39,12 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--ds-bg-page)', fontFamily: 'var(--font-main)' }}>
-      <header style={{ background: 'var(--bg-header)', height: 52, display: 'flex', alignItems: 'center', padding: '0 24px', gap: 32, position: 'sticky', top: 0, zIndex: 100 }}>
+      <header style={{ background: 'var(--bg-header)', height: 56, display: 'flex', alignItems: 'center', padding: '0 24px', gap: 32, position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 4, background: '#2980B9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff' }}>V</div>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>V</div>
           <div>
-            <div style={{ color: '#fff', fontSize: 13, fontWeight: 600, lineHeight: 1 }}>Vertiche CEDIS</div>
-            <div style={{ color: '#7FB3D3', fontSize: 10, lineHeight: 1.4, letterSpacing: '.05em' }}>SISTEMA RFID</div>
+            <div style={{ color: '#fff', fontSize: 13, fontWeight: 600, lineHeight: 1.1, letterSpacing: '.02em' }}>VERTICHE</div>
+            <div style={{ color: '#94A3B8', fontSize: 10, lineHeight: 1.4, letterSpacing: '.1em', textTransform: 'uppercase' }}>SortFlow · RFID</div>
           </div>
         </div>
         <nav style={{ display: 'flex', gap: 4, flex: 1 }}>
@@ -58,6 +59,7 @@ export default function App() {
             }}>{t.label}</button>
           ))}
         </nav>
+        <ThemeToggle />
       </header>
 
       <main style={{ padding: '20px 24px' }}>

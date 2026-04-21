@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { CARGO_SCENARIOS, PRODUCT_CATALOG, DEFECT_TYPES, MOCK_EPCS, COLOR_MAP,
          calcSampleSize, sampleHint, SUPPLIER_PROFILES } from '../data/demoData'
-import NivelBadge from '../components/NivelBadge'
-import Stars      from '../components/Stars'
+import NivelBadge  from '../components/NivelBadge'
+import Stars       from '../components/Stars'
+import OperatorBar from '../components/OperatorBar'
 
 const SINIESTRO_IDLE   = 'idle'
 const SINIESTRO_TYPE   = 'type'
@@ -70,6 +71,15 @@ export default function OperatorScreen({ suppliers, onReviewFinished }) {
   if (!review) {
     return (
       <div style={{ padding:'20px 32px', maxWidth:1400, margin:'0 auto' }}>
+        <OperatorBar
+          name="Luis Ramírez"
+          initials="LR"
+          employeeId="0042"
+          station="Arco RFID Bahía 02"
+          status="BAHÍA ACTIVA"
+          counterLabel="Revisión"
+          counterValue={cycleNum}
+        />
         <div style={{
           background:'var(--bg2)', border:'1px solid var(--border)',
           borderRadius:'var(--r2)', padding:40, textAlign:'center',
@@ -90,9 +100,9 @@ export default function OperatorScreen({ suppliers, onReviewFinished }) {
             Presiona el botón cuando llegue un camión al andén
           </p>
           <button onClick={startReview} style={{
-            background:'#1a3a6e', border:'1px solid var(--blue)',
+            background:'var(--blue)', border:'1px solid var(--blue)',
             borderRadius:'var(--r2)', padding:'13px 32px',
-            fontSize:14, fontWeight:600, color:'var(--blue-t)',
+            fontSize:14, fontWeight:600, color:'#fff',
             cursor:'pointer', fontFamily:'var(--font)',
           }}>
             Iniciar revisión — Siguiente carga
@@ -109,11 +119,15 @@ export default function OperatorScreen({ suppliers, onReviewFinished }) {
   return (
     <div style={{ padding:'20px 32px', maxWidth:1400, margin:'0 auto' }}>
 
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-        <span style={{ fontFamily:'var(--mono)', fontSize:11, color:'var(--text3)', letterSpacing:2 }}>
-          REVISIÓN #{cycleNum}
-        </span>
-      </div>
+      <OperatorBar
+        name="Luis Ramírez"
+        initials="LR"
+        employeeId="0042"
+        station="Arco RFID Bahía 02"
+        status="BAHÍA ACTIVA"
+        counterLabel="Revisión"
+        counterValue={cycleNum}
+      />
 
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'auto auto', gap:14, marginBottom:14 }}>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import ThemeToggle from '../theme/ThemeToggle'
 
 const TABS = [
   { id:'op-inicio',    label:'Op: inspección' },
@@ -23,12 +24,20 @@ export default function AppNav({ tab, setTab }) {
   return (
     <nav style={{
       position:'sticky', top:0, zIndex:100,
-      background:'#080808', borderBottom:'1px solid var(--border)',
+      background:'var(--bg1)', borderBottom:'1px solid var(--border)',
       padding:'0 20px', display:'flex', alignItems:'center',
-      height:48, gap:0,
+      height:56, gap:0,
     }}>
-      <div style={{ background:'var(--gold)', color:'#000', fontWeight:600, fontSize:13, padding:'3px 10px', borderRadius:4, marginRight:16, flexShrink:0 }}>
-        VTC
+      <div style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0, marginRight:20 }}>
+        <div style={{
+          width:32, height:32, borderRadius:8, background:'#4F46E5',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize:15, fontWeight:700, color:'#fff', fontFamily:'var(--mono)',
+        }}>V</div>
+        <div>
+          <div style={{ color:'var(--text)', fontSize:13, fontWeight:600, lineHeight:1.1, letterSpacing:'.02em' }}>VERTICHE</div>
+          <div style={{ color:'var(--text3)', fontSize:10, lineHeight:1.4, letterSpacing:'.1em', textTransform:'uppercase' }}>SortFlow · QA</div>
+        </div>
       </div>
       <div style={{ display:'flex', gap:2, flex:1, overflowX:'auto' }}>
         {TABS.map(t => (
@@ -43,9 +52,12 @@ export default function AppNav({ tab, setTab }) {
           </button>
         ))}
       </div>
-      <div style={{ marginLeft:'auto', flexShrink:0, textAlign:'right' }}>
-        <div style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--text)' }}>{time}</div>
-        <div style={{ fontSize:10, color:'var(--text3)' }}>Turno matutino</div>
+      <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
+        <div style={{ textAlign:'right' }}>
+          <div style={{ fontFamily:'var(--mono)', fontSize:13, color:'var(--text)' }}>{time}</div>
+          <div style={{ fontSize:10, color:'var(--text3)' }}>Turno matutino</div>
+        </div>
+        <ThemeToggle size={30} />
       </div>
     </nav>
   )

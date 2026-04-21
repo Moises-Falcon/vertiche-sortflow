@@ -1,7 +1,7 @@
 import { SUPPLIER_PROFILES, accionSistema } from '../data/demoData'
-import NivelBadge from '../components/NivelBadge'
-import Stars      from '../components/Stars'
-import Sparkline  from '../components/Sparkline'
+import NivelBadge  from '../components/NivelBadge'
+import Stars       from '../components/Stars'
+import Sparkline   from '../components/Sparkline'
 
 const ACTION_STYLES = {
   elite: { bg:'var(--green-bg)', border:'var(--green)', color:'var(--green-t)', icon:'✅' },

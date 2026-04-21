@@ -43,8 +43,8 @@ export default function ScanHistory({ history, total, onClickItem, side='right' 
             <div key={item.id || i}
               onClick={() => onClickItem && onClickItem(item)}
               style={{
-                background: i === 0 ? '#1e1e2e' : 'var(--card-bg)',
-                border: `1px solid ${i === 0 ? '#3a3a5a' : 'var(--card-border)'}`,
+                background: i === 0 ? 'var(--bg2)' : 'var(--card-bg)',
+                border: `1px solid ${i === 0 ? color : 'var(--card-border)'}`,
                 borderRadius: 8,
                 padding: '10px 12px',
                 animation: i === 0 ? 'slideIn .35s ease' : 'none',
@@ -55,7 +55,7 @@ export default function ScanHistory({ history, total, onClickItem, side='right' 
                 transition: 'border-color .15s',
               }}
               onMouseEnter={e => { if (onClickItem) e.currentTarget.style.borderColor = color }}
-              onMouseLeave={e => { if (onClickItem) e.currentTarget.style.borderColor = i===0?'#3a3a5a':'var(--card-border)' }}
+              onMouseLeave={e => { if (onClickItem) e.currentTarget.style.borderColor = i===0?color:'var(--card-border)' }}
             >
               <div style={{
                 width: 28, height: 28,

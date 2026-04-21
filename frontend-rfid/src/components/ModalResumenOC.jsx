@@ -34,7 +34,7 @@ export default function ModalResumenOC({ oc, onClose }) {
 
   return (
     <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.52)',zIndex:500,display:'flex',alignItems:'flex-start',justifyContent:'center',overflow:'auto',padding:'28px 20px'}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:860,background:'#fff',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.22)',marginBottom:32,animation:'ds-entrada-modal .22s ease'}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:860,background:'var(--ds-bg-surface)',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.22)',marginBottom:32,animation:'ds-entrada-modal .22s ease'}}>
 
         {/* HEADER */}
         <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)',display:'flex',gap:18,alignItems:'flex-start'}}>
@@ -46,19 +46,19 @@ export default function ModalResumenOC({ oc, onClose }) {
               {oc.etapasActivas?.map(e=><span key={e} style={{fontSize:9,fontWeight:700,padding:'2px 8px',borderRadius:100,background:`${ETAPA_COLORS[e]}18`,color:ETAPA_COLORS[e],border:`1px solid ${ETAPA_COLORS[e]}44`}}>{ETAPA_LABELS[e]}</span>)}
               {oc.hasErr&&<span style={{fontSize:9,fontWeight:700,padding:'2px 8px',borderRadius:100,background:'#FEE2E2',color:'#991B1B'}}>⚠ Requiere atención</span>}
             </div>
-            <div style={{fontSize:20,fontWeight:700,color:'#0F172A',marginBottom:4}}>{oc.nombre}</div>
-            <div style={{fontSize:11,color:'#94A3B8'}}>{oc.ordenId} · {oc.proveedor} · {total} prepacks{faltantes>0&&<span style={{color:'var(--ds-rojo)',fontWeight:700,marginLeft:6}}>· {faltantes} faltantes</span>}</div>
+            <div style={{fontSize:20,fontWeight:700,color:'var(--ds-text-primary)',marginBottom:4}}>{oc.nombre}</div>
+            <div style={{fontSize:11,color:'var(--ds-text-disabled)'}}>{oc.ordenId} · {oc.proveedor} · {total} prepacks{faltantes>0&&<span style={{color:'var(--ds-rojo)',fontWeight:700,marginLeft:6}}>· {faltantes} faltantes</span>}</div>
             <div style={{display:'flex',alignItems:'center',gap:6,marginTop:6}}>
               <div style={{width:16,height:16,borderRadius:'50%',background:colorCSS,border:esClaro?'1px solid #CBD5E1':'none',flexShrink:0}}/>
               <span style={{fontSize:10,color:'#64748B'}}>Color principal: <strong>{colorPrincipal||'—'}</strong></span>
             </div>
           </div>
-          <button onClick={onClose} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:32,height:32,cursor:'pointer',fontSize:18,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+          <button onClick={onClose} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:32,height:32,cursor:'pointer',fontSize:18,color:'var(--ds-text-disabled)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
         </div>
 
         {/* MÉTRICAS POR ETAPA */}
         <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)'}}>
-          <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:14}}>Recorrido completo — métricas por etapa</div>
+          <div style={{fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:14}}>Recorrido completo — métricas por etapa</div>
           <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}}>
             {ETAPAS_ORDEN.map(eId=>{
               const {n,err,ok,pct,pctOk,log,enCurso,dur}=getM(eId);
@@ -73,7 +73,7 @@ export default function ModalResumenOC({ oc, onClose }) {
                   <div style={{fontSize:22,fontWeight:900,color,lineHeight:1,marginBottom:2}}>{pct}%</div>
                   <div style={{fontSize:10,color:'#64748B',marginBottom:8}}>{n} de {total} prepacks</div>
                   {(eId==='QA'||eId==='AUDITORIA')&&<div style={{fontSize:9,color:'#475569',marginBottom:6}}>Calidad: <strong style={{color:pctOk===100?'var(--ds-verde)':'var(--ds-rojo)'}}>{pctOk}%</strong>{err>0&&<span style={{color:'var(--ds-rojo)',marginLeft:4}}>({err} rech.)</span>}</div>}
-                  {log&&<div style={{fontSize:8,color:'#94A3B8',lineHeight:1.6,borderTop:'1px solid #F1F5F9',paddingTop:6,marginTop:4}}>
+                  {log&&<div style={{fontSize:8,color:'var(--ds-text-disabled)',lineHeight:1.6,borderTop:'1px solid #F1F5F9',paddingTop:6,marginTop:4}}>
                     <div><span style={{fontWeight:600}}>Entró:</span> {formatHora(log.timestamp_entrada)}</div>
                     {enCurso?<div style={{color:'var(--ds-verde)',fontWeight:600}}>En curso</div>:<div><span style={{fontWeight:600}}>Salió:</span> {formatHora(log.timestamp_salida)}</div>}
                     {dur!==null&&dur>0&&<div><span style={{fontWeight:600}}>Duración:</span> {formatDur(dur)}</div>}
@@ -95,11 +95,11 @@ export default function ModalResumenOC({ oc, onClose }) {
 
         {/* PREPACKS */}
         <div style={{padding:'16px 26px'}}>
-          <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:10}}>Prepacks ({tags.length})</div>
+          <div style={{fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:10}}>Prepacks ({tags.length})</div>
           <div style={{overflowX:'auto'}}>
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
-              <thead><tr style={{background:'#F8FAFC'}}>
-                {['Producto','Tienda','Bahía','Etapa','Estado'].map(h=><th key={h} style={{padding:'5px 10px',textAlign:'left',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.4px',borderBottom:'1px solid var(--ds-border-light)',whiteSpace:'nowrap'}}>{h}</th>)}
+              <thead><tr style={{background:'var(--ds-bg-surface-2)'}}>
+                {['Producto','Tienda','Bahía','Etapa','Estado'].map(h=><th key={h} style={{padding:'5px 10px',textAlign:'left',fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.4px',borderBottom:'1px solid var(--ds-border-light)',whiteSpace:'nowrap'}}>{h}</th>)}
               </tr></thead>
               <tbody>{tags.map(tag=>{
                 const prendasTag=tag.prendas&&tag.prendas.length>0?tag.prendas:[{color:tag.color,talla:tag.talla}];
@@ -113,7 +113,7 @@ export default function ModalResumenOC({ oc, onClose }) {
                       <span style={{fontSize:10}}>{colsT.join('/')} · {tallsT.join(',')} · {prendasTag.length}p</span>
                     </div>
                   </td>
-                  <td style={{padding:'4px 10px'}}><div style={{fontSize:11}}>{tag.tienda?.nombre||'—'}</div>{tag.tienda?.ciudad&&<div style={{fontSize:9,color:'#94A3B8'}}>{tag.tienda.ciudad}</div>}</td>
+                  <td style={{padding:'4px 10px'}}><div style={{fontSize:11}}>{tag.tienda?.nombre||'—'}</div>{tag.tienda?.ciudad&&<div style={{fontSize:9,color:'var(--ds-text-disabled)'}}>{tag.tienda.ciudad}</div>}</td>
                   <td style={{padding:'4px 10px',fontSize:10,color:'var(--ds-text-muted)',whiteSpace:'nowrap'}}>{(tag.tienda?.bahia_asignada||'—').replace('BAHIA-','B-')}</td>
                   <td style={{padding:'4px 10px'}}><span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:`${ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}18`,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8',whiteSpace:'nowrap'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</span></td>
                   <td style={{padding:'4px 10px'}}>{err?<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:3,background:'#FEE2E2',color:'#991B1B',whiteSpace:'nowrap'}}>✗ QA</span>:<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:3,background:'#DCFCE7',color:'#15803D',whiteSpace:'nowrap'}}>✓ OK</span>}</td>

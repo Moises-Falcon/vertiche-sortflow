@@ -1,13 +1,118 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body, #root {
-  background: #f0f2f0;
-  color: #1a1e1a;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  min-height: 100vh;
+:root {
+  --bg-page:     #F5F7FA;
+  --bg-card:     #FFFFFF;
+  --bg-card-2:   #F8FAFC;
+  --bg-sunken:   #EDF0F5;
+  --border:      #E2E8F0;
+  --border-2:    #CBD5E1;
+  --text:        #0F172A;
+  --text-2:      #334155;
+  --text-muted:  #64748B;
+  --text-disabled:#94A3B8;
+
+  /* Paleta compartida Vertiche — misma que RFID */
+  --primary:      #4F46E5;
+  --primary-soft: #EEF2FF;
+  --accent-gold:  #F5C518;
+  --accent-green: #16A34A;
+  --accent-green-text: #15803D;
+  --accent-danger: #DC2626;
+  --accent-warn:   #D97706;
+
+  /* Radios */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
   color-scheme: light;
 }
+
+[data-theme="dark"] {
+  --bg-page:     #0F0F13;
+  --bg-card:     #171721;
+  --bg-card-2:   #1E1E2A;
+  --bg-sunken:   #22222E;
+  --border:      #2A2A3A;
+  --border-2:    #333344;
+  --text:        #FFFFFF;
+  --text-2:      #DDDDF0;
+  --text-muted:  #9898AC;
+  --text-disabled: #66667A;
+  --accent-green: #4ADE80;
+  --accent-green-text: #86EFAC;
+  --accent-danger: #F87171;
+  --accent-warn: #FBBF24;
+  color-scheme: dark;
+}
+
+/* Overrides CSS para elementos comunes que usan colores fijos */
+[data-theme="dark"] body,
+[data-theme="dark"] html,
+[data-theme="dark"] #root {
+  background: #0F0F13 !important;
+  color: #FFFFFF !important;
+}
+
+/* Atributos inline de hardcode → neutralizar en dark */
+[data-theme="dark"] [style*="background: #f0f2f0"],
+[data-theme="dark"] [style*="background:#f0f2f0"],
+[data-theme="dark"] [style*="background: #ffffff"],
+[data-theme="dark"] [style*="background:#ffffff"],
+[data-theme="dark"] [style*="background: #fff"],
+[data-theme="dark"] [style*="background:#fff"] {
+  background: var(--bg-card) !important;
+}
+[data-theme="dark"] [style*="background: #f5f8f5"],
+[data-theme="dark"] [style*="background:#f5f8f5"] {
+  background: var(--bg-card-2) !important;
+}
+[data-theme="dark"] [style*="border: 1px solid #dde3dd"],
+[data-theme="dark"] [style*="border: 1px solid #e5eae6"],
+[data-theme="dark"] [style*="border-color: #dde3dd"],
+[data-theme="dark"] [style*="borderBottom: '1px solid #dde3dd'"],
+[data-theme="dark"] [style*="border: '1px solid #dde3dd'"] {
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] [style*="color: #111"],
+[data-theme="dark"] [style*="color:#111"],
+[data-theme="dark"] [style*="color: #1a1e1a"],
+[data-theme="dark"] [style*="color: #333"],
+[data-theme="dark"] [style*="color:#333"],
+[data-theme="dark"] [style*="color: #2a3a2e"] {
+  color: var(--text) !important;
+}
+[data-theme="dark"] [style*="color: #6a8070"],
+[data-theme="dark"] [style*="color:#6a8070"],
+[data-theme="dark"] [style*="color: #444"],
+[data-theme="dark"] [style*="color: #555"],
+[data-theme="dark"] [style*="color:#555"] {
+  color: var(--text-2) !important;
+}
+[data-theme="dark"] [style*="color: #8aa090"],
+[data-theme="dark"] [style*="color:#8aa090"],
+[data-theme="dark"] [style*="color: #8a9e90"],
+[data-theme="dark"] [style*="color:#8a9e90"],
+[data-theme="dark"] [style*="color: #b0c0b4"],
+[data-theme="dark"] [style*="color: #aaa"],
+[data-theme="dark"] [style*="color:#aaa"] {
+  color: var(--text-muted) !important;
+}
+
+html, body, #root {
+  background: var(--bg-page);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 13px;
+  min-height: 100vh;
+  transition: background .2s, color .2s;
+}
+
+/* Unificación tipográfica — override de referencias a Rajdhani/Inter/Syne/Space Mono */
+[style*="Rajdhani"] { font-family: 'IBM Plex Sans', system-ui, sans-serif !important; font-weight: 700 !important; }
+[style*="Inter"]    { font-family: 'IBM Plex Sans', system-ui, sans-serif !important; }
+[style*="monospace"]:not([style*="Plex"]) { font-family: 'IBM Plex Mono', 'Consolas', monospace !important; }
 
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }

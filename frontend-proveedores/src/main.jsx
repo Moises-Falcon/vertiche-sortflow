@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { ThemeProvider } from './theme/ThemeContext'
 
 const link = document.createElement('link')
 link.rel = 'stylesheet'
@@ -9,5 +10,9 @@ link.href = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500
 document.head.appendChild(link)
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode><App /></StrictMode>
+  <StrictMode>
+    <ThemeProvider defaultTheme="dark" storageKey="vtc-proveedores-theme">
+      <App />
+    </ThemeProvider>
+  </StrictMode>
 )

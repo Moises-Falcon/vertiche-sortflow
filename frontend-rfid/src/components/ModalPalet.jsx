@@ -25,7 +25,7 @@ export default function ModalPalet({ paletId, onClose, onVerHistorial }) {
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '100%', maxWidth: 980,
-        background: '#fff',
+        background: 'var(--ds-bg-surface)',
         borderRadius: 12,
         boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
         marginBottom: 32,

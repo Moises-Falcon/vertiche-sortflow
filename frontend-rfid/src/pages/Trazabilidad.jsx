@@ -53,7 +53,7 @@ const ETAPA_LABELS = {
 };
 
 const panelStyle = {
-  background: '#FFFFFF',
+  background: 'var(--ds-bg-surface)',
   border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius)',
   boxShadow: 'var(--shadow)',
@@ -71,7 +71,7 @@ const seccionTituloStyle = {
 
 const btnOutlineStyle = {
   width: '100%', padding: '9px 14px',
-  background: '#fff',
+  background: 'var(--ds-bg-surface)',
   border: '1px solid var(--color-primary)',
   borderRadius: 'var(--radius)',
   color: 'var(--color-primary)',

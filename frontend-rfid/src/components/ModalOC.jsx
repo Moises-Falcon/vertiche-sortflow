@@ -107,11 +107,11 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
   });
 
   const td={padding:'8px 14px',borderBottom:'1px solid #F1F5F9',fontSize:12};
-  const th={padding:'8px 14px',fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.4px',background:'#F8FAFC',borderBottom:'1px solid var(--ds-border-light)'};
+  const th={padding:'8px 14px',fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.4px',background:'var(--ds-bg-surface-2)',borderBottom:'1px solid var(--ds-border-light)'};
 
   return (
     <div onClick={onClose} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.52)',zIndex:500,display:'flex',alignItems:'flex-start',justifyContent:'center',overflow:'auto',padding:'32px 20px'}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:920,background:'#fff',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.22)',marginBottom:32,animation:'ds-entrada-modal .22s ease'}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:920,background:'var(--ds-bg-surface)',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.22)',marginBottom:32,animation:'ds-entrada-modal .22s ease'}}>
 
         {/* HEADER */}
         <div style={{padding:'22px 26px',borderBottom:'1px solid var(--ds-border-light)',display:'flex',gap:18,alignItems:'flex-start'}}>
@@ -145,13 +145,13 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
               }
               {tieneErr&&<span style={{background:'#FEE2E2',color:'#991B1B',fontSize:10,fontWeight:700,padding:'3px 10px',borderRadius:100}}>Requiere atencion</span>}
             </div>
-            <div style={{fontSize:20,fontWeight:700,color:'#0F172A',marginBottom:4}}>{cargando?'...':nombre}</div>
-            <div style={{fontSize:11,color:'#94A3B8'}}>{ordenId} · {proveedor} · {tags.length} prepack{tags.length!==1?'s':''}{faltantes>0&&<span style={{color:'var(--ds-rojo)',fontWeight:700,marginLeft:6}}>· {faltantes} faltante{faltantes!==1?'s':''}</span>}</div>
+            <div style={{fontSize:20,fontWeight:700,color:'var(--ds-text-primary)',marginBottom:4}}>{cargando?'...':nombre}</div>
+            <div style={{fontSize:11,color:'var(--ds-text-disabled)'}}>{ordenId} · {proveedor} · {tags.length} prepack{tags.length!==1?'s':''}{faltantes>0&&<span style={{color:'var(--ds-rojo)',fontWeight:700,marginLeft:6}}>· {faltantes} faltante{faltantes!==1?'s':''}</span>}</div>
           </div>
-          <button onClick={onClose} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:32,height:32,cursor:'pointer',fontSize:18,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+          <button onClick={onClose} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:32,height:32,cursor:'pointer',fontSize:18,color:'var(--ds-text-disabled)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
         </div>
 
-        {cargando?<div style={{padding:60,textAlign:'center',color:'#94A3B8'}}>Cargando detalle...</div>
+        {cargando?<div style={{padding:60,textAlign:'center',color:'var(--ds-text-disabled)'}}>Cargando detalle...</div>
         :!palet?<div style={{padding:60,textAlign:'center',color:'#EF4444'}}>No se pudo cargar la orden.</div>
         :<>
           {/* MÉTRICAS DE LA ETAPA DE ORIGEN */}
@@ -177,7 +177,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
               <div style={{padding:'16px 26px',borderBottom:'1px solid var(--ds-border-light)',background:`${c}08`,borderLeft:`4px solid ${c}`}}>
                 <div style={{fontSize:9,fontWeight:700,color:c,textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>{EL[etapaOrigen]} — métricas de esta etapa</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
-                  {mets.map((m,i)=><div key={i} style={{background:'#fff',borderRadius:8,padding:'10px 14px',border:`1px solid ${c}33`}}>
+                  {mets.map((m,i)=><div key={i} style={{background:'var(--ds-bg-surface)',borderRadius:8,padding:'10px 14px',border:`1px solid ${c}33`}}>
                     <div style={{fontSize:9,fontWeight:700,color:c,textTransform:'uppercase',letterSpacing:'.4px',marginBottom:4}}>{m.l}</div>
                     <div style={{fontSize:26,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1}}>{m.v}</div>
                     <div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:2}}>{m.d}</div>
@@ -189,8 +189,8 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
 
           {/* TABLA COLOR x TALLA */}
           <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)'}}>
-            <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>Contenido — tabla color × talla</div>
-            {tagsOk.length===0?<div style={{fontSize:13,color:'#94A3B8'}}>Sin prepacks activos.</div>:(
+            <div style={{fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>Contenido — tabla color × talla</div>
+            {tagsOk.length===0?<div style={{fontSize:13,color:'var(--ds-text-disabled)'}}>Sin prepacks activos.</div>:(
               <div style={{overflowX:'auto',borderRadius:10,border:'1px solid var(--ds-border-light)'}}>
                 <table style={{borderCollapse:'collapse',width:'100%',minWidth:360}}>
                   <thead><tr>
@@ -206,7 +206,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                     </tr>
                   ))}</tbody>
                   <tfoot><tr style={{borderTop:'2px solid var(--ds-border-light)'}}>
-                    <td style={{...td,fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase'}}>Total</td>
+                    <td style={{...td,fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase'}}>Total</td>
                     {tallas.map(t=><td key={t} style={{...td,textAlign:'center',fontWeight:800,fontSize:13}}>{totTalla(t)}</td>)}
                     <td style={{...td,textAlign:'center',fontSize:16,fontWeight:900,background:'var(--ds-primary)',color:'#fff'}}>{totalPrendas}</td>
                   </tr></tfoot>
@@ -221,12 +221,12 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
             <div style={{padding:'16px 26px',borderBottom:'1px solid var(--ds-border-light)',background:'var(--ds-amarillo-bg)',borderLeft:'4px solid var(--ds-amarillo)'}}>
               <div style={{fontSize:9,fontWeight:700,color:'var(--ds-amarillo-text)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:10}}>⚠ Validación de recepción</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:12}}>
-                <div style={{background:'#fff',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-amarillo-border)'}}>
+                <div style={{background:'var(--ds-bg-surface)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-amarillo-border)'}}>
                   <div style={{fontSize:9,color:'var(--ds-amarillo-text)',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Esperados según OC</div>
                   <div style={{fontSize:22,fontWeight:800,color:'var(--ds-text-primary)'}}>{totalEsperados}</div>
                   <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>prepacks</div>
                 </div>
-                <div style={{background:'#fff',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-amarillo-border)'}}>
+                <div style={{background:'var(--ds-bg-surface)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-amarillo-border)'}}>
                   <div style={{fontSize:9,color:'var(--ds-amarillo-text)',fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Recibidos</div>
                   <div style={{fontSize:22,fontWeight:800,color:'var(--ds-text-primary)'}}>{totalRecibidos}</div>
                   <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>prepacks</div>
@@ -244,10 +244,10 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
           {/* HISTORIAL GENERAL — consolidado, una línea por etapa */}
           {etapaLogs.length>0&&(
             <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)'}}>
-              <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:14}}>Historial del cargamento</div>
+              <div style={{fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:14}}>Historial del cargamento</div>
               {(()=>{
                 const logsC = consolidarHistorial(etapaLogs).filter(l => l.etapa !== 'COMPLETADO');
-                if(logsC.length===0) return <div style={{fontSize:12,color:'#94A3B8'}}>Sin historial registrado.</div>;
+                if(logsC.length===0) return <div style={{fontSize:12,color:'var(--ds-text-disabled)'}}>Sin historial registrado.</div>;
                 return(
                   <div style={{overflowX:'auto',paddingBottom:8}}>
                     <div style={{display:'flex',alignItems:'flex-start',gap:0,minWidth:'max-content'}}>
@@ -264,9 +264,9 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                                 {log.tiene_anomalia?'⚠':enCurso?'●':'✓'}
                               </div>
                               <div style={{fontSize:9,fontWeight:700,color:'#334155',textTransform:'uppercase',letterSpacing:'.3px',marginBottom:4}}>{ETAPA_LABELS[log.etapa]}</div>
-                              <div style={{fontSize:9,color:'#64748B',marginTop:2,lineHeight:1.4}}><span style={{fontWeight:600}}>Entró:</span> {formatHora(log.timestamp_entrada)}</div>
-                              {enCurso?<div style={{fontSize:9,color:'var(--ds-verde)',fontWeight:700,marginTop:1}}>En curso</div>:<div style={{fontSize:9,color:'#64748B',lineHeight:1.4}}><span style={{fontWeight:600}}>Salió:</span> {formatHora(log.timestamp_salida)}</div>}
-                              {dur!==null&&dur>0&&<div style={{fontSize:9,color:'#94A3B8',marginTop:1}}>Duración: {formatDur(dur)}</div>}
+                              <div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:2,lineHeight:1.4}}><span style={{fontWeight:600}}>Entró:</span> {formatHora(log.timestamp_entrada)}</div>
+                              {enCurso?<div style={{fontSize:9,color:'var(--ds-verde)',fontWeight:700,marginTop:1}}>En curso</div>:<div style={{fontSize:9,color:'var(--ds-text-muted)',lineHeight:1.4}}><span style={{fontWeight:600}}>Salió:</span> {formatHora(log.timestamp_salida)}</div>}
+                              {dur!==null&&dur>0&&<div style={{fontSize:9,color:'var(--ds-text-disabled)',marginTop:1}}>Duración: {formatDur(dur)}</div>}
                               {bajoPrepacks&&<div style={{fontSize:8,fontWeight:700,color:'var(--ds-rojo-text)',background:'var(--ds-rojo-bg)',borderRadius:4,padding:'1px 6px',marginTop:3,display:'inline-block'}}>{log.prepacks_entrada}→{log.prepacks_salida} prep.</div>}
                             </div>
                           </div>
@@ -282,13 +282,13 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
           {/* BAHIAS DE ESTA OC */}
           {bahiasOC.length>0&&(
             <div style={{padding:'20px 26px',borderBottom:'1px solid var(--ds-border-light)'}}>
-              <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>Distribucion en bahias</div>
+              <div style={{fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>Distribucion en bahias</div>
               <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
                 {bahiasOC.map(b=>(
                   <div key={b.id} style={{border:'1.5px solid var(--ds-zona-auditoria-border)',borderLeft:'4px solid var(--ds-zona-auditoria)',borderRadius:8,padding:'8px 14px',background:'var(--ds-zona-auditoria-bg)',minWidth:100}}>
                     <div style={{fontSize:9,fontWeight:700,color:'#7C3AED',textTransform:'uppercase',marginBottom:2}}>Bahia {b.n}</div>
-                    <div style={{fontSize:18,fontWeight:800,color:'#0F172A',lineHeight:1}}>{b.total}</div>
-                    <div style={{fontSize:9,color:'#94A3B8',marginTop:1}}>prepacks</div>
+                    <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1}}>{b.total}</div>
+                    <div style={{fontSize:9,color:'var(--ds-text-disabled)',marginTop:1}}>prepacks</div>
                   </div>
                 ))}
               </div>
@@ -297,11 +297,11 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
 
           {/* PREPACKS */}
           <div style={{padding:'20px 26px'}}>
-            <div style={{fontSize:9,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>
+            <div style={{fontSize:9,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:12}}>
               {etapaOrigen ? `Prepacks en ${ETAPA_LABELS[etapaOrigen]} (${tagsFiltrados.length} de ${tags.length})` : `Prepacks (${tags.length})`}{tagsFiltrados.filter(t=>t.qa_fallido).length>0&&<span style={{color:'#991B1B',marginLeft:8}}>· {tagsFiltrados.filter(t=>t.qa_fallido).length} rechazado{tagsFiltrados.filter(t=>t.qa_fallido).length!==1?'s':''}</span>}
             </div>
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
-              <thead><tr style={{background:'#F8FAFC'}}>
+              <thead><tr style={{background:'var(--ds-bg-surface-2)'}}>
                 {['# Código','Producto','Tienda destino','Bahia','Etapa','Estado',''].map(h=><th key={h} style={{...th,textAlign:'left'}}>{h}</th>)}
               </tr></thead>
               <tbody>
@@ -326,8 +326,8 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                         );})}</div>
                         <div style={{fontSize:9,color:'var(--ds-text-muted)',marginTop:1}}>{tallUnicas.join(', ')} · {prendas.length} prenda{prendas.length!==1?'s':''}</div>
                       </td>
-                      <td style={{...td,fontSize:11}}>{tag.tienda?.nombre||tag.tienda_id||'—'}{tag.tienda?.ciudad&&<div style={{fontSize:10,color:'#64748B',marginTop:1}}>{tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</div>}</td>
-                      <td style={{...td,fontSize:11,color:'#94A3B8'}}>{tag.tienda?.bahia_asignada||'—'}</td>
+                      <td style={{...td,fontSize:11}}>{tag.tienda?.nombre||tag.tienda_id||'—'}{tag.tienda?.ciudad&&<div style={{fontSize:10,color:'var(--ds-text-muted)',marginTop:1}}>{tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</div>}</td>
+                      <td style={{...td,fontSize:11,color:'var(--ds-text-disabled)'}}>{tag.tienda?.bahia_asignada||'—'}</td>
                       <td style={td}><span style={{fontSize:10,fontWeight:600,padding:'2px 7px',borderRadius:4,background:`${ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}18`,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</span></td>
                       <td style={td}>
                         <div style={{display:'flex',alignItems:'center',gap:4,flexWrap:'nowrap'}}>
@@ -340,17 +340,17 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                     </tr>,
                     isExp&&<tr key={`${packId}-d`}><td colSpan={7} style={{padding:'16px 20px',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>
                       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px',marginBottom:14,fontSize:12}}>
-                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Contenido</span><div style={{fontWeight:600,color:'#0F172A',marginTop:2}}>{colUnicos.join(' / ')} · {tallUnicas.join(', ')}</div></div>
-                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Tienda destino</span><div style={{fontWeight:600,color:'#0F172A',marginTop:2}}>{tag.tienda?.nombre||'—'}{tag.tienda?.ciudad&&<span style={{fontWeight:400,color:'#64748B'}}> — {tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</span>}</div></div>
+                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Contenido</span><div style={{fontWeight:600,color:'var(--ds-text-primary)',marginTop:2}}>{colUnicos.join(' / ')} · {tallUnicas.join(', ')}</div></div>
+                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Tienda destino</span><div style={{fontWeight:600,color:'var(--ds-text-primary)',marginTop:2}}>{tag.tienda?.nombre||'—'}{tag.tienda?.ciudad&&<span style={{fontWeight:400,color:'var(--ds-text-muted)'}}> — {tag.tienda.ciudad}{tag.tienda.estado_rep?`, ${tag.tienda.estado_rep}`:''}</span>}</div></div>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Tipo de flujo</span><div style={{marginTop:2}}>{tag.tipo_flujo||'—'}</div></div>
-                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Prendas en prepack</span><div style={{fontWeight:700,fontSize:15,color:'#0F172A',marginTop:2}}>{prendas.length}</div></div>
-                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>EPC</span><code style={{fontSize:10,color:'#64748B',marginTop:2,display:'block'}}>{packId}</code></div>
+                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Prendas en prepack</span><div style={{fontWeight:700,fontSize:15,color:'var(--ds-text-primary)',marginTop:2}}>{prendas.length}</div></div>
+                        <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>EPC</span><code style={{fontSize:10,color:'var(--ds-text-muted)',marginTop:2,display:'block'}}>{packId}</code></div>
                         <div><span style={{fontSize:9,color:'var(--ds-primary-dark)',fontWeight:700,textTransform:'uppercase'}}>Bahía asignada</span><div style={{fontWeight:600,color:'var(--ds-zona-auditoria)',marginTop:2}}>{tag.tienda?.bahia_asignada||'—'}</div></div>
                         {tag.qa_fallido&&<div style={{gridColumn:'1/-1',background:'var(--ds-rojo-bg)',borderRadius:6,padding:'8px 12px',border:'1px solid var(--ds-rojo-border)'}}><strong style={{color:'var(--ds-rojo-text)'}}>Rechazado en QA: </strong><span style={{color:'var(--ds-rojo-text)'}}>{tag.qa_motivo_fallo||'Sin motivo registrado'}</span></div>}
                       </div>
                       <div style={{borderTop:'1px solid var(--ds-primary-border)',paddingTop:12}}>
                         <div style={{fontSize:9,fontWeight:700,color:'var(--ds-primary-dark)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:10}}>Recorrido de este prepack</div>
-                        {(()=>{const logsC=consolidarHistorial(etapaLogs).filter(l=>l.etapa!=='COMPLETADO');if(logsC.length===0)return<div style={{fontSize:11,color:'#94A3B8'}}>Sin historial disponible.</div>;return(
+                        {(()=>{const logsC=consolidarHistorial(etapaLogs).filter(l=>l.etapa!=='COMPLETADO');if(logsC.length===0)return<div style={{fontSize:11,color:'var(--ds-text-disabled)'}}>Sin historial disponible.</div>;return(
                           <div style={{display:'flex',alignItems:'flex-start',gap:0,overflowX:'auto'}}>
                             {logsC.map((log,idx)=>{const color=ETAPA_COLORS[log.etapa]||'#94A3B8';const enCurso=!log.timestamp_salida;const dur=log.timestamp_salida?Math.round((new Date(log.timestamp_salida)-new Date(log.timestamp_entrada))/60000):null;return(
                               <div key={log.etapa} style={{display:'flex',alignItems:'flex-start'}}>
@@ -358,9 +358,9 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                                 <div style={{width:84,textAlign:'center',flexShrink:0}}>
                                   <div style={{width:32,height:32,borderRadius:'50%',background:enCurso?color:`${color}18`,border:`2px solid ${color}`,margin:'0 auto 5px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:enCurso?'#fff':color}}>{enCurso?'●':'✓'}</div>
                                   <div style={{fontSize:8,fontWeight:700,color:'#334155',textTransform:'uppercase',letterSpacing:'.2px',marginBottom:2}}>{ETAPA_LABELS[log.etapa]}</div>
-                                  <div style={{fontSize:9,color:'#64748B',fontWeight:600}}>{formatHora(log.timestamp_entrada)}</div>
+                                  <div style={{fontSize:9,color:'var(--ds-text-muted)',fontWeight:600}}>{formatHora(log.timestamp_entrada)}</div>
                                   <div style={{fontSize:9,color:enCurso?'var(--ds-verde)':'#94A3B8'}}>{enCurso?'en curso':formatHora(log.timestamp_salida)}</div>
-                                  {dur!==null&&dur>0&&<div style={{fontSize:8,color:'#94A3B8',marginTop:1}}>{formatDur(dur)}</div>}
+                                  {dur!==null&&dur>0&&<div style={{fontSize:8,color:'var(--ds-text-disabled)',marginTop:1}}>{formatDur(dur)}</div>}
                                 </div>
                               </div>
                             );})}
@@ -389,7 +389,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
         const txtC=esC?'#1E293B':'#FFFFFF';
         return(
           <div onClick={()=>setPrepackModal(null)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:20}}>
-            <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:620,background:'#fff',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.25)',animation:'ds-entrada-modal .2s ease',overflow:'hidden'}}>
+            <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:620,background:'var(--ds-bg-surface)',borderRadius:14,boxShadow:'0 24px 64px rgba(0,0,0,0.25)',animation:'ds-entrada-modal .2s ease',overflow:'hidden'}}>
               <div style={{padding:'16px 20px',borderBottom:'1px solid var(--ds-border-light)',display:'flex',alignItems:'center',gap:16}}>
                 <div style={{width:56,height:56,borderRadius:10,flexShrink:0,background:cCSS,border:esC?'2px solid #E2E8F0':'none',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>
                   <svg viewBox="0 0 32 32" width={36} height={36} fill="none"><path d="M10 4L5 10L9 12L9 26L23 26L23 12L27 10L22 4C21 6 18.5 7.5 16 7.5C13.5 7.5 11 6 10 4Z" fill={esC?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.25)'} stroke={esC?'rgba(0,0,0,0.2)':'rgba(255,255,255,0.5)'} strokeWidth={1}/></svg>
@@ -402,12 +402,12 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                   <div style={{fontSize:18,fontWeight:800,color:'var(--ds-text-primary)',lineHeight:1,marginBottom:2}}>{prendasMM.length} prenda{prendasMM.length!==1?'s':''} — {colUnicosMM.join(' / ')}</div>
                   <div style={{fontSize:10,color:'var(--ds-text-muted)'}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual} · {tag.tienda?.nombre||'—'}</div>
                 </div>
-                <button onClick={()=>setPrepackModal(null)} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:30,height:30,cursor:'pointer',fontSize:16,color:'#94A3B8',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
+                <button onClick={()=>setPrepackModal(null)} style={{background:'none',border:'1px solid var(--ds-border-light)',borderRadius:6,width:30,height:30,cursor:'pointer',fontSize:16,color:'var(--ds-text-disabled)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
               </div>
               <div style={{padding:'16px 20px'}}>
                 <div style={{display:'flex',gap:12,marginBottom:16}}>
                   {colUnicosMM.length>1?(
-                    <div style={{width:80,height:80,borderRadius:10,flexShrink:0,background:'#F8FAFC',border:'1px solid var(--ds-border-light)',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'center',gap:4,padding:8,boxShadow:'0 2px 10px rgba(0,0,0,0.08)'}}>
+                    <div style={{width:80,height:80,borderRadius:10,flexShrink:0,background:'var(--ds-bg-surface-2)',border:'1px solid var(--ds-border-light)',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'center',gap:4,padding:8,boxShadow:'0 2px 10px rgba(0,0,0,0.08)'}}>
                       {colUnicosMM.slice(0,4).map(c=>{const cc=COLMAP[(c||'').toLowerCase()]||'#94A3B8';const ec=['blanco','white','beige','amarillo'].includes((c||'').toLowerCase());return(
                         <div key={c} title={c} style={{width:26,height:26,borderRadius:'50%',background:cc,border:ec?'1.5px solid #CBD5E1':'1.5px solid rgba(0,0,0,0.1)',flexShrink:0}}/>
                       );})}
@@ -418,21 +418,21 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                     </div>
                   )}
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'6px 16px',flex:1}}>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Colores</div><div style={{fontSize:12,fontWeight:700,color:'var(--ds-text-primary)'}}>{colUnicosMM.join(' / ')}</div></div>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Tallas</div><div style={{fontSize:12,fontWeight:700,color:'var(--ds-text-primary)'}}>{tallUnicasMM.join(', ')}</div></div>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Prendas</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{prendasMM.length}</div></div>
-                    <div><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Tipo flujo</div><div style={{fontSize:11,color:'var(--ds-text-secondary)'}}>{tag.tipo_flujo||'—'}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',marginBottom:2}}>Colores</div><div style={{fontSize:12,fontWeight:700,color:'var(--ds-text-primary)'}}>{colUnicosMM.join(' / ')}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',marginBottom:2}}>Tallas</div><div style={{fontSize:12,fontWeight:700,color:'var(--ds-text-primary)'}}>{tallUnicasMM.join(', ')}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',marginBottom:2}}>Prendas</div><div style={{fontSize:13,fontWeight:700,color:'var(--ds-text-primary)'}}>{prendasMM.length}</div></div>
+                    <div><div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',marginBottom:2}}>Tipo flujo</div><div style={{fontSize:11,color:'var(--ds-text-secondary)'}}>{tag.tipo_flujo||'—'}</div></div>
                   </div>
                 </div>
                 {/* Tabla color × talla del prepack */}
                 {(()=>{const{colores,tallas,conteo,totColor,totTalla,gran}=buildTablaPrepack(tag);return(
                   <div style={{marginBottom:14}}>
-                    <div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Contenido de este prepack</div>
+                    <div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Contenido de este prepack</div>
                     <div style={{borderRadius:8,border:'1px solid var(--ds-border-light)',overflow:'hidden'}}>
                       <table style={{borderCollapse:'collapse',width:'100%',fontSize:11}}>
-                        <thead><tr style={{background:'#F8FAFC'}}>
-                          <th style={{padding:'5px 10px',textAlign:'left',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',borderBottom:'1px solid var(--ds-border-light)'}}>Color</th>
-                          {tallas.map(t=><th key={t} style={{padding:'5px 10px',textAlign:'center',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',borderBottom:'1px solid var(--ds-border-light)'}}>{t}</th>)}
+                        <thead><tr style={{background:'var(--ds-bg-surface-2)'}}>
+                          <th style={{padding:'5px 10px',textAlign:'left',fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',borderBottom:'1px solid var(--ds-border-light)'}}>Color</th>
+                          {tallas.map(t=><th key={t} style={{padding:'5px 10px',textAlign:'center',fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',borderBottom:'1px solid var(--ds-border-light)'}}>{t}</th>)}
                           <th style={{padding:'5px 10px',textAlign:'center',fontSize:8,fontWeight:700,color:'var(--ds-primary-dark)',textTransform:'uppercase',background:'var(--ds-primary-light)',borderBottom:'1px solid var(--ds-border-light)'}}>Total</th>
                         </tr></thead>
                         <tbody>
@@ -445,7 +445,7 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                           );})}
                         </tbody>
                         <tfoot><tr style={{borderTop:'2px solid var(--ds-border-light)'}}>
-                          <td style={{padding:'6px 10px',fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase'}}>Total</td>
+                          <td style={{padding:'6px 10px',fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase'}}>Total</td>
                           {tallas.map(t=><td key={t} style={{padding:'6px 10px',textAlign:'center',fontWeight:800,fontSize:12}}>{totTalla(t)}</td>)}
                           <td style={{padding:'6px 10px',textAlign:'center',fontSize:15,fontWeight:900,color:'#fff',background:'var(--ds-primary)'}}>{gran}</td>
                         </tr></tfoot>
@@ -453,13 +453,13 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                     </div>
                   </div>
                 );})()}
-                <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Tienda destino</div>
+                <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Tienda destino</div>
                   <div style={{background:'var(--ds-bg-surface-2)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--ds-border-light)',display:'flex',gap:16,alignItems:'center'}}>
                     <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:'var(--ds-text-primary)'}}>{tag.tienda?.nombre||'—'}</div>{(tag.tienda?.ciudad||tag.tienda?.estado)&&<div style={{fontSize:10,color:'var(--ds-text-muted)',marginTop:2}}>{[tag.tienda?.ciudad,tag.tienda?.estado].filter(Boolean).join(', ')}</div>}</div>
-                    <div style={{textAlign:'center'}}><div style={{fontSize:9,color:'#94A3B8',textTransform:'uppercase',marginBottom:2}}>Bahía</div><div style={{fontSize:14,fontWeight:800,color:'var(--ds-zona-auditoria)'}}>{(tag.tienda?.bahia_asignada||'—').replace('BAHIA-','B-')}</div></div>
+                    <div style={{textAlign:'center'}}><div style={{fontSize:9,color:'var(--ds-text-disabled)',textTransform:'uppercase',marginBottom:2}}>Bahía</div><div style={{fontSize:14,fontWeight:800,color:'var(--ds-zona-auditoria)'}}>{(tag.tienda?.bahia_asignada||'—').replace('BAHIA-','B-')}</div></div>
                   </div>
                 </div>
-                <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'#94A3B8',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Estatus</div>
+                <div style={{marginBottom:14}}><div style={{fontSize:8,fontWeight:700,color:'var(--ds-text-disabled)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Estatus</div>
                   <div style={{display:'flex',gap:8}}>
                     <div style={{flex:1,padding:'8px 12px',borderRadius:8,background:tag.qa_fallido?'var(--ds-rojo-bg)':'var(--ds-verde-bg)',border:`1px solid ${tag.qa_fallido?'var(--ds-rojo-border)':'var(--ds-verde-border)'}`,textAlign:'center'}}>
                       <div style={{fontSize:16,marginBottom:2}}>{tag.qa_fallido?'✗':'✓'}</div>
@@ -470,9 +470,9 @@ export default function ModalOC({ ordenId, demoData = null, etapaOrigen = null, 
                       <div style={{fontSize:16,marginBottom:2}}>{['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'✓':'·'}</div>
                       <div style={{fontSize:10,fontWeight:700,color:['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'var(--ds-verde-text)':'#64748B'}}>{['ENVIO','COMPLETADO'].includes(tag.etapa_actual)?'Entregado':'Pendiente'}</div>
                     </div>
-                    <div style={{flex:1,padding:'8px 12px',borderRadius:8,background:'#F8FAFC',border:'1px solid var(--ds-border-light)',textAlign:'center'}}>
+                    <div style={{flex:1,padding:'8px 12px',borderRadius:8,background:'var(--ds-bg-surface-2)',border:'1px solid var(--ds-border-light)',textAlign:'center'}}>
                       <div style={{fontSize:14,fontWeight:800,color:ETAPA_COLORS[tag.etapa_actual]||'#94A3B8',marginBottom:2}}>{ETAPA_LABELS[tag.etapa_actual]||tag.etapa_actual}</div>
-                      <div style={{fontSize:9,color:'#94A3B8'}}>etapa actual</div>
+                      <div style={{fontSize:9,color:'var(--ds-text-disabled)'}}>etapa actual</div>
                     </div>
                   </div>
                 </div>

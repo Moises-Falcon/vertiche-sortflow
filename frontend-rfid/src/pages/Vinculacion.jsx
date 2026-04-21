@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/rfidApi';
 
 const panelStyle = {
-  background: '#FFFFFF',
+  background: 'var(--ds-bg-surface)',
   border: '1px solid var(--color-border)',
   borderRadius: 'var(--radius)',
   boxShadow: 'var(--shadow)',

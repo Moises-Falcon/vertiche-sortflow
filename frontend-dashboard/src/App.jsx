@@ -12,7 +12,7 @@ export default function App() {
   const [modalStage, setModalStage] = useState(null)
 
   return (
-    <div style={{ minHeight:'100vh', background:'#f0f2f0', colorScheme:'light' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg-page)', colorScheme:'light' }}>
       <Topbar />
 
       <div style={{ padding:'14px 18px' }}>
@@ -21,14 +21,14 @@ export default function App() {
         <ThroughputChart />
 
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-          <div style={{ fontSize:11, color:'#8aa090', letterSpacing:'.08em', fontWeight:500 }}>
+          <div style={{ fontSize:11, color:'var(--text-muted)', letterSpacing:'.08em', fontWeight:500 }}>
             ETAPAS — CLIC PARA DETALLE
           </div>
           <div style={{ display:'flex' }}>
             <div style={{ fontSize:11, fontWeight:600, letterSpacing:'.06em', padding:'4px 11px', color:'#1a7a50', background:'rgba(26,144,96,0.07)', border:'1px solid rgba(26,144,96,0.25)', borderRadius:'2px 0 0 2px', cursor:'pointer' }}>
               VISTA RED
             </div>
-            <div style={{ fontSize:11, fontWeight:600, letterSpacing:'.06em', padding:'4px 11px', color:'#8aa090', background:'#fff', border:'1px solid #dde3dd', borderLeft:'none', borderRadius:'0 2px 2px 0', cursor:'pointer' }}>
+            <div style={{ fontSize:11, fontWeight:600, letterSpacing:'.06em', padding:'4px 11px', color:'var(--text-muted)', background:'#fff', border:'1px solid #dde3dd', borderLeft:'none', borderRadius:'0 2px 2px 0', cursor:'pointer' }}>
               VISTA FLUJO
             </div>
           </div>

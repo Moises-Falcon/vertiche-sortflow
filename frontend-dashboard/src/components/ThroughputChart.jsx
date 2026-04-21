@@ -76,7 +76,7 @@ export default function ThroughputChart() {
   }, [])
 
   return (
-    <div style={{ background:'#ffffff', border:'1px solid #dde3dd', borderRadius:4, padding:'12px 16px', marginBottom:12 }}>
+    <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:4, padding:'12px 16px', marginBottom:12 }}>
       <div style={{ display:'flex', gap:16, marginBottom:8 }}>
         <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:11, fontWeight:600, letterSpacing:'.07em', color:'#0a7a90' }}>
           <div style={{ width:12, height:2, background:'#0a8fa8', borderRadius:1 }} />

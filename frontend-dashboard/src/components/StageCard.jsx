@@ -14,14 +14,14 @@ export default function StageCard({ etapa, onClick }) {
     <div
       onClick={onClick}
       style={{
-        background:'#ffffff', border:'1px solid #dde3dd',
+        background:'var(--bg-card)', border:'1px solid var(--border)',
         borderLeft:`3px solid ${colors.border}`,
         borderRadius:4, padding:'14px 16px',
         cursor:'pointer', position:'relative',
         transition:'background .15s, box-shadow .15s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = '#f5f8f5'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)' }}
-      onMouseLeave={e => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.boxShadow = 'none' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card-2)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.boxShadow = 'none' }}
     >
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
         <span style={{ fontSize:11, fontWeight:700, letterSpacing:'.1em', color:colors.name }}>
@@ -29,11 +29,11 @@ export default function StageCard({ etapa, onClick }) {
         </span>
         <span style={{ width:7, height:7, borderRadius:'50%', flexShrink:0, ...DOT_STYLE[etapa.dot] }} />
       </div>
-      <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:36, fontWeight:700, color:'#111', lineHeight:1.05 }}>
+      <div style={{ fontFamily:'Rajdhani,sans-serif', fontSize:36, fontWeight:700, color:'var(--text)', lineHeight:1.05 }}>
         {etapa.val}
-        {etapa.unit && <span style={{ fontSize:14, fontWeight:500, color:'#8aa090', marginLeft:2 }}>{etapa.unit}</span>}
+        {etapa.unit && <span style={{ fontSize:14, fontWeight:500, color:'var(--text-muted)', marginLeft:2 }}>{etapa.unit}</span>}
       </div>
-      <div style={{ fontSize:10, color:'#8aa090', letterSpacing:'.05em', margin:'3px 0 8px', textTransform:'uppercase' }}>
+      <div style={{ fontSize:10, color:'var(--text-muted)', letterSpacing:'.05em', margin:'3px 0 8px', textTransform:'uppercase' }}>
         {etapa.sub}
       </div>
       <div style={{ fontSize:11, fontWeight:600, letterSpacing:'.04em', color:STATUS_COLOR[etapa.status] }}>
