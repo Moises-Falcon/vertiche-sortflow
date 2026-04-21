@@ -1,121 +1,47 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import AppNav          from './components/AppNav'
+import OperatorScreen  from './pages/OperatorScreen'
+import ResumenTurno    from './pages/ResumenTurno'
+import PlanQA          from './pages/PlanQA'
+import PerfilProveedor from './pages/PerfilProveedor'
+import { SUPPLIERS_INITIAL } from './data/demoData'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [tab,       setTab]       = useState('op-inicio')
+  const [suppliers, setSuppliers] = useState(SUPPLIERS_INITIAL)
+  const [stats,     setStats]     = useState({ totalSO: 0, inspected: 0, rejected: 0 })
+  const [profileId, setProfileId] = useState(5)
+
+  const onReviewFinished = ({ supplierId, defectCount, totalSample }) => {
+    setSuppliers(prev => prev.map(s => {
+      if (s.id !== supplierId) return s
+      const approvalRate = totalSample > 0 ? (totalSample - defectCount) / totalSample : 1
+      const delta   = approvalRate >= 0.95 ? +0.1 : approvalRate >= 0.7 ? 0 : -0.2
+      const newStars = Math.max(0, Math.min(5, parseFloat((s.stars + delta).toFixed(1))))
+      const newLevel = newStars >= 4.5 ? 'ELITE' : newStars >= 2.5 ? 'MEDIA' : newStars > 0 ? 'BAJA' : 'NUEVO'
+      const newColor = newStars >= 4.5 ? 'ba'    : newStars >= 2.5 ? 'bb'    : newStars > 0 ? 'bc'   : 'bn'
+      return { ...s, stars: newStars, level: newLevel, color: newColor }
+    }))
+    setStats(prev => ({
+      totalSO:    prev.totalSO + 1,
+      inspected:  prev.inspected + totalSample,
+      rejected:   prev.rejected + defectCount,
+    }))
+  }
+
+  const active = suppliers.filter(s => s.stars > 0)
+  const avgStars = active.length
+    ? (active.reduce((a, s) => a + s.stars, 0) / active.length).toFixed(1)
+    : '0.0'
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <AppNav tab={tab} setTab={setTab} />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {tab === 'op-inicio'   && <OperatorScreen  suppliers={suppliers} onReviewFinished={onReviewFinished} />}
+      {tab === 'sup-resumen' && <ResumenTurno    suppliers={suppliers} stats={stats} avgStars={avgStars} setTab={setTab} setProfileId={setProfileId} />}
+      {tab === 'sup-plan'    && <PlanQA          suppliers={suppliers} />}
+      {tab === 'sup-proveedor' && <PerfilProveedor supplierId={profileId} suppliers={suppliers} setProfileId={setProfileId} />}
+    </div>
   )
 }
-
-export default App

@@ -14,6 +14,7 @@ const pedidosRouter = require('./routes/pedidos');
 const paletsRouter = require('./routes/palets');
 const tiendasRouter = require('./routes/tiendas');
 const ordenesRouter = require('./routes/ordenes');
+const inspeccionQaRouter = require('./routes/inspeccionQa');
 const { initSocket } = require('./socket/socketHandler');
 
 const app = express();
@@ -37,6 +38,8 @@ app.use('/api/pedidos', pedidosRouter);
 app.use('/api/palets', paletsRouter);
 app.use('/api/tiendas', tiendasRouter);
 app.use('/api/ordenes', ordenesRouter);
+app.use('/api/qa', inspeccionQaRouter);
+app.use('/api/inspeccion-qa', inspeccionQaRouter);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

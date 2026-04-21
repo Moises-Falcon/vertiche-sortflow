@@ -1,121 +1,60 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import Topbar        from './components/Topbar'
+import TopCards      from './components/TopCards'
+import ThroughputChart from './components/ThroughputChart'
+import StageCard     from './components/StageCard'
+import AlertsDrawer  from './components/AlertsDrawer'
+import StageModal    from './components/StageModal'
+import { ETAPAS }    from './data/dashboardData'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [modalStage, setModalStage] = useState(null)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ minHeight:'100vh', background:'#f0f2f0', colorScheme:'light' }}>
+      <Topbar />
 
-      <div className="ticks"></div>
+      <div style={{ padding:'14px 18px' }}>
+        <TopCards onOpenDrawer={() => setDrawerOpen(true)} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <ThroughputChart />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+          <div style={{ fontSize:11, color:'#8aa090', letterSpacing:'.08em', fontWeight:500 }}>
+            ETAPAS — CLIC PARA DETALLE
+          </div>
+          <div style={{ display:'flex' }}>
+            <div style={{ fontSize:11, fontWeight:600, letterSpacing:'.06em', padding:'4px 11px', color:'#1a7a50', background:'rgba(26,144,96,0.07)', border:'1px solid rgba(26,144,96,0.25)', borderRadius:'2px 0 0 2px', cursor:'pointer' }}>
+              VISTA RED
+            </div>
+            <div style={{ fontSize:11, fontWeight:600, letterSpacing:'.06em', padding:'4px 11px', color:'#8aa090', background:'#fff', border:'1px solid #dde3dd', borderLeft:'none', borderRadius:'0 2px 2px 0', cursor:'pointer' }}>
+              VISTA FLUJO
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8 }}>
+          {ETAPAS.map(etapa => (
+            <StageCard
+              key={etapa.key}
+              etapa={etapa}
+              onClick={() => setModalStage(etapa.key)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <AlertsDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onGoToStage={key => setModalStage(key)}
+      />
+
+      <StageModal
+        stageKey={modalStage}
+        onClose={() => setModalStage(null)}
+      />
+    </div>
   )
 }
-
-export default App

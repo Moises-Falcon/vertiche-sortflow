@@ -14,26 +14,37 @@ async function main() {
   await prisma.anomalia.deleteMany({});
   await prisma.eventoLectura.deleteMany({});
 
-  // ── Proveedores ──────────────────────────────────────────────────────────
-  const prov1 = await prisma.proveedor.upsert({
-    where: { codigo: 'PROV-001' },
-    update: {},
-    create: { nombre: 'Textiles Monterrey SA', codigo: 'PROV-001', contacto: 'Carlos Mendez', email: 'cmendez@textilesmty.mx' }
-  });
-  const prov2 = await prisma.proveedor.upsert({
-    where: { codigo: 'PROV-002' },
-    update: {},
-    create: { nombre: 'Confecciones del Norte', codigo: 'PROV-002', contacto: 'Ana Torres', email: 'atorres@confnorte.mx' }
-  });
+  // ── Proveedores (alineados con frontend: 7 reales) ──────────────────────
+  const prov1 = await prisma.proveedor.upsert({ where: { codigo: 'PROV-001' }, update: {}, create: { nombre: 'Textiles Monterrey SA',  codigo: 'PROV-001', contacto: 'Carlos Mendez',     email: 'cmendez@textilesmty.mx'    } });
+  const prov2 = await prisma.proveedor.upsert({ where: { codigo: 'PROV-002' }, update: {}, create: { nombre: 'Confecciones del Norte', codigo: 'PROV-002', contacto: 'Ana Torres',         email: 'atorres@confnorte.mx'      } });
+  await prisma.proveedor.upsert({             where: { codigo: 'PROV-003' }, update: {}, create: { nombre: 'Moda Express MX',         codigo: 'PROV-003', contacto: 'Luis Vargas',        email: 'lvargas@modaexpress.mx'    } });
+  await prisma.proveedor.upsert({             where: { codigo: 'PROV-004' }, update: {}, create: { nombre: 'ActiveWear CDMX',         codigo: 'PROV-004', contacto: 'Patricia Soto',      email: 'psoto@activewearcdmx.mx'   } });
+  await prisma.proveedor.upsert({             where: { codigo: 'PROV-005' }, update: {}, create: { nombre: 'Diseños Guadalajara',     codigo: 'PROV-005', contacto: 'Roberto Jimenez',    email: 'rjimenez@disenosgdl.mx'    } });
+  await prisma.proveedor.upsert({             where: { codigo: 'PROV-006' }, update: {}, create: { nombre: 'Estampados MX',           codigo: 'PROV-006', contacto: 'Diana Torres',       email: 'dtorres@estampadosmx.com'  } });
+  await prisma.proveedor.upsert({             where: { codigo: 'PROV-007' }, update: {}, create: { nombre: 'Urban Trends MX',         codigo: 'PROV-007', contacto: 'Miguel Herrera',     email: 'mherrera@urbantrends.mx'   } });
 
-  // ── Tiendas ──────────────────────────────────────────────────────────────
+  // ── Tiendas (alineadas con frontend demo: 20 tiendas, 10 bahías) ────────
   const tiendas = [
-    { tienda_id: 'TDA-007', nombre: 'Vertiche Monterrey Centro', ciudad: 'Monterrey',              region: 'Noreste',   bahia_asignada: 'BAHIA-1' },
-    { tienda_id: 'TDA-015', nombre: 'Vertiche San Pedro',        ciudad: 'San Pedro Garza Garcia',  region: 'Noreste',   bahia_asignada: 'BAHIA-2' },
-    { tienda_id: 'TDA-029', nombre: 'Vertiche Guadalajara',      ciudad: 'Guadalajara',             region: 'Occidente', bahia_asignada: 'BAHIA-3' },
-    { tienda_id: 'TDA-033', nombre: 'Vertiche CDMX Polanco',     ciudad: 'Ciudad de Mexico',        region: 'Centro',    bahia_asignada: 'BAHIA-4' },
-    { tienda_id: 'TDA-044', nombre: 'Vertiche Puebla',           ciudad: 'Puebla',                  region: 'Centro',    bahia_asignada: 'BAHIA-1' },
-    { tienda_id: 'TDA-051', nombre: 'Vertiche Cancun',           ciudad: 'Cancun',                  region: 'Sureste',   bahia_asignada: 'BAHIA-2' },
+    { tienda_id: 'TDA-007', nombre: 'Vertiche Monterrey Centro', ciudad: 'Monterrey',               region: 'Noreste',   estado_rep: 'NL',   bahia_asignada: 'BAHIA-1'  },
+    { tienda_id: 'TDA-008', nombre: 'Vertiche Monterrey Sur',    ciudad: 'Monterrey',               region: 'Noreste',   estado_rep: 'NL',   bahia_asignada: 'BAHIA-1'  },
+    { tienda_id: 'TDA-015', nombre: 'Vertiche San Pedro',        ciudad: 'San Pedro Garza Garcia',  region: 'Noreste',   estado_rep: 'NL',   bahia_asignada: 'BAHIA-2'  },
+    { tienda_id: 'TDA-016', nombre: 'Vertiche Saltillo',         ciudad: 'Saltillo',                region: 'Noreste',   estado_rep: 'COAH', bahia_asignada: 'BAHIA-2'  },
+    { tienda_id: 'TDA-029', nombre: 'Vertiche Guadalajara',      ciudad: 'Guadalajara',             region: 'Occidente', estado_rep: 'JAL',  bahia_asignada: 'BAHIA-3'  },
+    { tienda_id: 'TDA-030', nombre: 'Vertiche Zapopan',          ciudad: 'Zapopan',                 region: 'Occidente', estado_rep: 'JAL',  bahia_asignada: 'BAHIA-3'  },
+    { tienda_id: 'TDA-033', nombre: 'Vertiche CDMX Polanco',     ciudad: 'Ciudad de Mexico',        region: 'Centro',    estado_rep: 'CDMX', bahia_asignada: 'BAHIA-4'  },
+    { tienda_id: 'TDA-034', nombre: 'Vertiche CDMX Roma',        ciudad: 'Ciudad de Mexico',        region: 'Centro',    estado_rep: 'CDMX', bahia_asignada: 'BAHIA-4'  },
+    { tienda_id: 'TDA-044', nombre: 'Vertiche Puebla',           ciudad: 'Puebla',                  region: 'Centro',    estado_rep: 'PUE',  bahia_asignada: 'BAHIA-5'  },
+    { tienda_id: 'TDA-045', nombre: 'Vertiche Queretaro',        ciudad: 'Queretaro',               region: 'Centro',    estado_rep: 'QRO',  bahia_asignada: 'BAHIA-5'  },
+    { tienda_id: 'TDA-046', nombre: 'Vertiche San Luis Potosi',  ciudad: 'San Luis Potosi',         region: 'Centro',    estado_rep: 'SLP',  bahia_asignada: 'BAHIA-6'  },
+    { tienda_id: 'TDA-047', nombre: 'Vertiche Aguascalientes',   ciudad: 'Aguascalientes',          region: 'Centro',    estado_rep: 'AGS',  bahia_asignada: 'BAHIA-6'  },
+    { tienda_id: 'TDA-048', nombre: 'Vertiche Hermosillo',       ciudad: 'Hermosillo',              region: 'Noroeste',  estado_rep: 'SON',  bahia_asignada: 'BAHIA-7'  },
+    { tienda_id: 'TDA-049', nombre: 'Vertiche Culiacan',         ciudad: 'Culiacan',                region: 'Noroeste',  estado_rep: 'SIN',  bahia_asignada: 'BAHIA-7'  },
+    { tienda_id: 'TDA-050', nombre: 'Vertiche Tijuana',          ciudad: 'Tijuana',                 region: 'Noroeste',  estado_rep: 'BC',   bahia_asignada: 'BAHIA-8'  },
+    { tienda_id: 'TDA-051', nombre: 'Vertiche Cancun',           ciudad: 'Cancun',                  region: 'Sureste',   estado_rep: 'QROO', bahia_asignada: 'BAHIA-9'  },
+    { tienda_id: 'TDA-052', nombre: 'Vertiche Merida',           ciudad: 'Merida',                  region: 'Sureste',   estado_rep: 'YUC',  bahia_asignada: 'BAHIA-9'  },
+    { tienda_id: 'TDA-053', nombre: 'Vertiche Mexicali',         ciudad: 'Mexicali',                region: 'Noroeste',  estado_rep: 'BC',   bahia_asignada: 'BAHIA-8'  },
+    { tienda_id: 'TDA-054', nombre: 'Vertiche Chihuahua',        ciudad: 'Chihuahua',               region: 'Noroeste',  estado_rep: 'CHIH', bahia_asignada: 'BAHIA-10' },
+    { tienda_id: 'TDA-055', nombre: 'Vertiche Ciudad Juarez',    ciudad: 'Ciudad Juarez',           region: 'Noroeste',  estado_rep: 'CHIH', bahia_asignada: 'BAHIA-10' },
   ];
   for (const t of tiendas) {
     await prisma.tienda.upsert({ where: { tienda_id: t.tienda_id }, update: {}, create: t });

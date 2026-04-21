@@ -73,6 +73,12 @@ enum TipoAnomalia {
   QA_RECHAZADO
 }
 
+enum ResultadoQA {
+  APROBADO
+  OBSERVADO
+  RECHAZADO
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model Tienda {
@@ -100,6 +106,7 @@ model Proveedor {
   anomalias Anomalia[]
   pedidos   Pedido[]
   ordenes   OrdenCompra[]
+  inspecciones_qa InspeccionQA[]
 
   @@map("proveedores")
 }
@@ -208,6 +215,7 @@ model Tag {
   eventos         EventoLectura[]
   prepack_cajas   PrepackCaja[]
   anomalias       Anomalia[]
+  inspecciones_qa InspeccionQA[]
 
   @@map("tags")
 }
@@ -254,6 +262,24 @@ model PrepackCaja {
 
   @@unique([epc, caja_id])
   @@map("prepack_caja")
+}
+
+model InspeccionQA {
+  id            Int         @id @default(autoincrement())
+  tag_epc       String
+  tag           Tag         @relation(fields: [tag_epc], references: [epc])
+  proveedor_id  Int
+  proveedor     Proveedor   @relation(fields: [proveedor_id], references: [id])
+  operador_id   String
+  resultado     ResultadoQA
+  defecto_tipo  String?
+  observacion   String?
+  fecha         DateTime    @default(now())
+
+  @@map("inspeccion_qa")
+  @@index([tag_epc])
+  @@index([proveedor_id])
+  @@index([fecha])
 }
 
 model Anomalia {
